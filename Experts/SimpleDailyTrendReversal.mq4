@@ -354,7 +354,7 @@ void UpdateTradeHistoryPanel()
    _labelGlobalProfit.Color =  _tradeStats.GlobalProfit >= 0 ? White:Red;
    _labelGlobalOrders.Text  =  IntegerToString(_tradeStats.GlobalOrderCount) ;
    
-   _labelProfit.Text        =  DoubleToString( _tradeStats.TotalProfit,2) +" " + AccountCurrency();
+   _labelProfit.Text        =  DoubleToString( _tradeStats.TotalProfit,2) +" " + AccountCurrency() + "  (" + DoubleToStr(_tradeStats.TotalProfitPips, 2) + " pips)" ;
    _labelProfit.Color       =  _tradeStats.TotalProfit >= 0 ? White:Red;
    _labelOrders.Text        =  IntegerToString(_tradeStats.TotalCount);
    _labelOrdersBuySell.Text = " buy:" + IntegerToString(_tradeStats.BuyOrders) + " / sell: " + IntegerToString(_tradeStats.SellOrders) ;

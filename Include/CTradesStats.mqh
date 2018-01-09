@@ -13,6 +13,7 @@ public:
    int     SellOrders;              // # of open sell orders for this chart / ea
    
    double  TotalProfit;             // total profit of all open orders for this chart / ea
+   double  TotalProfitPips;         // total profit of all open orders for this chart / ea
    double  TotalProfitOfSellOrders; // total profit of all sell open orders for this chart / ea
    double  TotalProfitOfBuyOrders;  // total profit of all buy open orders for this chart / ea
    
@@ -176,6 +177,7 @@ public:
       SellOrders = 0;
       BuyOrders  = 0;
       TotalProfit= 0;
+	  TotalProfitPips = 0;
       TotalProfitOfSellOrders = 0;
       TotalProfitOfBuyOrders  = 0;
       HighestBuyPrice  = 0;
@@ -193,24 +195,40 @@ public:
             double price = OrderOpenPrice();
             if (OrderMagicNumber() == _magicNumberBuy || OrderMagicNumber() == _magicNumberSell)
             {
-               TotalProfit += orderProfit;
-               TotalCount++;
+				TotalProfit += orderProfit;
+				TotalCount++;
+			   
+				double pips     = 0;
+				double priceBid = MarketInfo(OrderSymbol(), MODE_BID);
+				double priceAsk = MarketInfo(OrderSymbol(), MODE_ASK);
+				double points   = MarketInfo(OrderSymbol(), MODE_POINT);
+				double digits   = MarketInfo(OrderSymbol(), MODE_DIGITS);
+				int orderType   = OrderType();
+				double mult = 1.0;
+				if (digits == 3 || digits == 5) mult = 10.0;
                
-               int orderType=OrderType();
-               if (IsBuy(orderType)) 
-               {
-                  BuyOrders++;
-                  TotalProfitOfBuyOrders += orderProfit;
-                  HighestBuyPrice = MathMax(HighestBuyPrice, price);
-                  LowestBuyPrice  = MathMin(LowestBuyPrice, price);
-               }
-               else
-               {
-                  SellOrders=SellOrders+1;
-                  TotalProfitOfSellOrders += orderProfit;
-                  HighestSellPrice = MathMax(HighestSellPrice, price);
-                  LowestSellPrice  = MathMin(LowestSellPrice, price);
-               }
+				if (IsBuy(orderType)) 
+				{
+					BuyOrders++;
+					TotalProfitOfBuyOrders += orderProfit;
+					HighestBuyPrice = MathMax(HighestBuyPrice, price);
+					LowestBuyPrice  = MathMin(LowestBuyPrice, price);
+					pips		    = ( priceBid - OrderOpenPrice());
+				}
+				else
+				{
+					SellOrders=SellOrders+1;
+					TotalProfitOfSellOrders += orderProfit;
+					HighestSellPrice = MathMax(HighestSellPrice, price);
+					LowestSellPrice  = MathMin(LowestSellPrice, price);
+					pips			 = ( OrderOpenPrice() - priceAsk);
+				}
+				if (pips != 0)
+				{
+					pips /= mult;
+					pips /= points;
+					TotalProfitPips += pips;
+				}
             }
          }
       }
