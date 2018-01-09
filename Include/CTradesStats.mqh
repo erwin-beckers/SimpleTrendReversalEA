@@ -81,8 +81,9 @@ public:
             {
                double digits   = MarketInfo(OrderSymbol(), MODE_DIGITS);
                double points   = MarketInfo(OrderSymbol(), MODE_POINT);
-               double mult = 1;
-               if (digits ==3 || digits==5) mult = 10;
+               double mult = 1.0;
+               if (digits == 3 || digits == 5) mult = 10.0;
+
                TotalTrades = TotalTrades+1;
                TotalLotsTraded += OrderLots();
                double orderProfit = OrderProfit() + OrderSwap() + OrderCommission();
@@ -96,12 +97,13 @@ public:
                {
                   pips = ( OrderOpenPrice() - OrderClosePrice());
                }
+
                if (pips != 0)
                {
                   pips /= mult;
                   pips /= points;
                }
-               AllTimeProfitPips+=pips;
+               AllTimeProfitPips += pips;
                
                if (orderProfit > 0) 
                {
@@ -120,16 +122,16 @@ public:
                     TimeMonth(orderTime) == TimeMonth(now) &&
                     TimeYear(orderTime)  == TimeYear(now) )
                { 
-                  ProfitToday += orderProfit;
-                  ProfitTodayPips+=pips;
+                  ProfitToday     += orderProfit;
+                  ProfitTodayPips += pips;
                }
                
                if ( TimeDay(orderTime)   == TimeDay(yesterday) &&
                     TimeMonth(orderTime) == TimeMonth(yesterday) &&
                     TimeYear(orderTime)  == TimeYear(yesterday) )
                { 
-                  ProfitYesterday += orderProfit;
-                  ProfitYesterdayPips+=pips;
+                  ProfitYesterday     += orderProfit;
+                  ProfitYesterdayPips += pips;
                }
             }
         }

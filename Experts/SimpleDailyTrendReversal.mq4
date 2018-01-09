@@ -345,12 +345,12 @@ void DrawOpenOrders()
 //--------------------------------------------------------------------
 void UpdateTradeHistoryPanel()
 {   
-   _labelBalance.Text    =  DoubleToString(AccountBalance(),2) + " " + AccountCurrency();
-   _labelEquity.Text     =  DoubleToString(AccountEquity(),2)  + " " + AccountCurrency();
-   _labelFreeMargin.Text =  DoubleToString(AccountFreeMargin(),2) + " " + AccountCurrency();
-   _labelMargin.Text     =  DoubleToString(AccountMargin(),2) + " " + AccountCurrency();
+   _labelBalance.Text    =  DoubleToString(AccountBalance(), 2) + " " + AccountCurrency();
+   _labelEquity.Text     =  DoubleToString(AccountEquity(), 2)  + " " + AccountCurrency();
+   _labelFreeMargin.Text =  DoubleToString(AccountFreeMargin(), 2) + " " + AccountCurrency();
+   _labelMargin.Text     =  DoubleToString(AccountMargin(), 2) + " " + AccountCurrency();
    
-   _labelGlobalProfit.Text  =  DoubleToString( _tradeStats.GlobalProfit,2) +" " + AccountCurrency();
+   _labelGlobalProfit.Text  =  DoubleToString( _tradeStats.GlobalProfit, 2) +" " + AccountCurrency();
    _labelGlobalProfit.Color =  _tradeStats.GlobalProfit >= 0 ? White:Red;
    _labelGlobalOrders.Text  =  IntegerToString(_tradeStats.GlobalOrderCount) ;
    
@@ -358,19 +358,19 @@ void UpdateTradeHistoryPanel()
    _labelProfit.Color       =  _tradeStats.TotalProfit >= 0 ? White:Red;
    _labelOrders.Text        =  IntegerToString(_tradeStats.TotalCount);
    _labelOrdersBuySell.Text = " buy:" + IntegerToString(_tradeStats.BuyOrders) + " / sell: " + IntegerToString(_tradeStats.SellOrders) ;
-   _labelProfitBuySell.Text = DoubleToString(_tradeStats.TotalProfitOfBuyOrders,2)  +" " + AccountCurrency() + " / " + DoubleToString(_tradeStats.TotalProfitOfSellOrders, 2)  + " " + AccountCurrency();
+   _labelProfitBuySell.Text = DoubleToString(_tradeStats.TotalProfitOfBuyOrders, 2)  +" " + AccountCurrency() + " / " + DoubleToString(_tradeStats.TotalProfitOfSellOrders, 2)  + " " + AccountCurrency();
    
    _labelOrdersWonLost.Text  = IntegerToString(_tradeStats.OrdersWon) + " / " + IntegerToString(_tradeStats.OrdersLost) + " (" + DoubleToString(_tradeStats.WinPercentage, 2) + " % winrate)";
    _labelOrdersWonLost.Color = (_tradeStats.OrdersWon + _tradeStats.OrdersLost) >= 0 ? White:Red; 
    
    _labelTotalTrades.Text  = IntegerToString(_tradeStats.TotalTrades);
-   _labelProfitToday.Text  = DoubleToStr(_tradeStats.ProfitToday, 2) + " " + AccountCurrency()+ "  (" + DoubleToStr(_tradeStats.ProfitToday,2) + " pips)" ;
+   _labelProfitToday.Text  = DoubleToStr(_tradeStats.ProfitToday, 2) + " " + AccountCurrency() + "  (" + DoubleToStr(_tradeStats.ProfitTodayPips, 2) + " pips)" ;
    _labelProfitToday.Color = (_tradeStats.ProfitToday) >= 0 ? White:Red; 
    
-   _labelProfitYesterday.Text  = DoubleToStr(_tradeStats.ProfitYesterday, 2) + " " + AccountCurrency()+ "  (" + DoubleToStr(_tradeStats.ProfitYesterdayPips,2) + " pips)" ;
+   _labelProfitYesterday.Text  = DoubleToStr(_tradeStats.ProfitYesterday, 2) + " " + AccountCurrency() + "  (" + DoubleToStr(_tradeStats.ProfitYesterdayPips, 2) + " pips)" ;
    _labelProfitYesterday.Color = (_tradeStats.ProfitYesterday) >= 0 ? White:Red; 
    
-   _labelProfitAllTime.Text  = DoubleToStr(_tradeStats.AllTimeProfit, 2) + " " + AccountCurrency() + "  (" + DoubleToStr(_tradeStats.AllTimeProfitPips,2) + " pips)" ;
+   _labelProfitAllTime.Text  = DoubleToStr(_tradeStats.AllTimeProfit, 2) + " " + AccountCurrency() + "  (" + DoubleToStr(_tradeStats.AllTimeProfitPips, 2) + " pips)" ;
    _labelProfitAllTime.Color = (_tradeStats.AllTimeProfit) >= 0 ? White:Red; 
    
    _labelProfitFactor.Text   = DoubleToStr(_tradeStats.ProfitFactor, 2);    

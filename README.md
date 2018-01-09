@@ -10,6 +10,8 @@ Version history:
 
 1.18.3
 - code refactoring
+- fixed trade panel showed wrong nr of pips for today's profit
+- hopefully fixed bug where EA closed after changing settings
 
 1.18.2
 - fixed bug when no pairs where found
