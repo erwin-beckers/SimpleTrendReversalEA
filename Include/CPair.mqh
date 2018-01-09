@@ -128,9 +128,6 @@ public:
       {
          CIndicator* ind = _strategy.GetIndicator(i);
          if (ind.IsValid) cnt++;
-         //if (_symbol == "GBPCAD"){
-         //  Print(_symbol," ",ind.Name," ",ind.IsValid);
-         //}
       }
       if ( _allowedToTradeNews && UseNewsFilter )  cnt = cnt + 1;
       if ( _allowedToTradeTimeFilter ) cnt = cnt + 1;
@@ -151,7 +148,7 @@ public:
    {
       double maxX = (1 + GetMaxSignalCount() ) * 60 + 140;
       
-      DrawRectBg(10,35,(int)maxX,20,clrGray);
+      DrawRectBg(10, 35, (int)maxX, 20, clrGray);
       
       DrawText(1, 20, "Time", White);
       DrawText(1, 81, "Pair", White);
@@ -181,7 +178,7 @@ public:
       if (_signal == NULL) return;
       int xpos = 140;
       DrawTextLine(line, 0,TimeToStr(TimeCurrent(), TIME_MINUTES), White);
-      DrawTextLine(line, 1, _symbol, White,-30);
+      DrawTextLine(line, 1, _symbol, White, -30);
       
       color zigClr = clrGray;
       if (_signal.IsBuy  ) zigClr = Green;
@@ -194,6 +191,7 @@ public:
          color clr =  (indicator.IsValid ) ? zigClr : clrGray;
          DrawRect(line, xpos, clr,60 ); xpos+=60;
       }
+
       if (UseNewsFilter)
       {
          color newsColor = _allowedToTradeNews ? zigClr : clrGray;
@@ -205,6 +203,7 @@ public:
          
       color validColor = ( SignalCount() == GetMaxSignalCount() ) ? zigClr : clrGray;
       DrawRect(line, xpos, validColor, 60  );xpos+=60;
+
       if (validColor != clrGray)
       {
          if (zigClr == Green)  DrawText(line, xpos-42, "buy" , White, 2);
@@ -235,8 +234,7 @@ public:
    {
      return _trailingStop.GetRiskReward(ticket);
    }
-   
-   
+      
    //--------------------------------------------------------------------
    void Refresh()
    {
@@ -277,17 +275,23 @@ public:
    //--------------------------------------------------------------------
    void CloseOppositeOrders()
    {  
-      if (!allowTrading) return;  
       if (_signal == NULL) return;
+      
+	  // is trading enabled ?
+      if (!allowTrading) return;  
+
+      // is market open ?
       if (!MarketInfo(_symbol, MODE_TRADEALLOWED)) return;
+
+	  // is spread on this pair ok ?
       if (!_orders.IsSpreadOk()) return;
      
       // do we have a valid signal ?
       if ( SignalCount() != GetMaxSignalCount() ) return;
       
-      // if it is a buy signal, then close any sell orders
       if (_signal.IsBuy)
       {  
+		// if it is a buy signal, then close any sell orders
          _orders.CloseOrderByType(OP_SELL);
       }
       else if (_signal.IsSell)
@@ -300,56 +304,77 @@ public:
    //--------------------------------------------------------------------
    void OpenNewOrder()
    {  
-      // trading enabled ?
-      if (!allowTrading) return;  
       if (_signal == NULL) return;
-      if ( SignalCount() != GetMaxSignalCount() ) return;
+
+      // is trading enabled ?
+      if (!allowTrading) return;  
+	  
+      // is market open ?
       if (!MarketInfo(_symbol, MODE_TRADEALLOWED)) return;
+	  
+	  // is spread on this pair ok ?
       if (!_orders.IsSpreadOk()) return;
+	  	  
+      // do we have a valid signal ?
+      if ( SignalCount() != GetMaxSignalCount() ) return;
+
+	  // do we have any trades running for this pair
       int  orderCount  = _orders.GetOrderCount();
-      if (orderCount != 0) return;
+      if (orderCount != 0) return; // yes, return
       
-      // no order running atm
-      // get last order for this symbol
+      // no trade running atm. Lets see if we are allowed to open a new one.
+
+      // get last trade for this symbol
       COrder* order = _orders.GetLastClosedOrder();
       if (order != NULL)
       {
-         // check #minutes elapsed since this order has closed
+         // check number of minutes elapsed since this last trade has closed
          double timeElapsed =(double)(TimeCurrent() - order.CloseTime);
          timeElapsed /= 60.0;
-         bool isBuy  = order.IsBuy;
-         bool isSell = order.IsSell;
+         bool lastTradeWasBuyOrder  = order.IsBuy;
+         bool lastTradeWasSellOrder = order.IsSell;
          delete order;
          
          int minsSinceLastTrade = (int)timeElapsed;
-      
+		 
+		 // did enough time pass since last trade ?
+		 if (minsSinceLastTrade < minsBetween2TradesOnSamePair)
+         {
+			// no, then return
+            return;
+         }
+
+		 // enough time passed.
+		 // are we allowed to take re-entries ?
          if (!AllowReEntriesOnSamePair)
          {
-            if (isBuy && _signal.IsBuy && minsSinceLastTrade < minsBetween2TradesOnSamePair)
+		    // no we are not. 
+			// Is this a re-entry ?
+            if (lastTradeWasBuyOrder && _signal.IsBuy)
             {
+				// yes, then return
                 return;
             }
-            if (isSell && _signal.IsSell  && minsSinceLastTrade < minsBetween2TradesOnSamePair)
+
+            if (lastTradeWasSellOrder && _signal.IsSell)
             {
+				// yes, then return
                 return;
-            }
-         }
-         else 
-         {
-            if (minsSinceLastTrade < minsBetween2TradesOnSamePair)
-            {
-               return;
             }
          }
       }
       
       // did we reach the max nr of open orders ?
-      if (_orders.CanOpenNewOrder() == false) return; // yes then don't open another trade             
+      if (_orders.CanOpenNewOrder() == false) 
+	  {
+		 // yes then don't open another trade             
+		 return; 
+	  }
        
-      // then place order..
+      // ok, we are allowed to open a new order , so place order..
       if (_signal.IsBuy)
       {  
-         // buy order
+         // place buy order
          Print(_symbol, " -> place buy order");
          double slZigZag = _signal.StopLoss;
          double price    = MarketInfo(_symbol, MODE_ASK);
@@ -361,13 +386,13 @@ public:
          if (stopLossAtZigZagArrow ) sl = slZigZag;
          if (OrderHiddenSL > 0 && slZigZag > orderSl) sl=orderSl;
         
-        Print(_symbol," open buy trade @", DoubleToStr(price,5), " sl:", DoubleToStr(sl,5));
+        Print(_symbol," open buy trade @", DoubleToStr(price, 5), " sl:", DoubleToStr(sl, 5));
         int ticket = _orders.OpenBuyOrder(_orders.GetLotSize(sl, OP_BUY), 0, 0);
-        if (ticket >= 0) _trailingStop.SetInitalStoploss(ticket,sl);
+        if (ticket >= 0) _trailingStop.SetInitalStoploss(ticket, sl);
       }
       else if (_signal.IsSell)
       {
-         // sell order
+         // place sell order
          Print(_symbol, " -> place sell order");
          double slZigZag = _signal.StopLoss;
          double price    = MarketInfo(_symbol, MODE_BID);
@@ -379,9 +404,9 @@ public:
          if (stopLossAtZigZagArrow ) sl = slZigZag;
          if (OrderHiddenSL > 0 && slZigZag < orderSl) sl=orderSl;
          
-         Print(_symbol," open sell trade @", DoubleToStr(price,5), " sl:", DoubleToStr(sl,5));
+         Print(_symbol," open sell trade @", DoubleToStr(price, 5), " sl:", DoubleToStr(sl, 5));
          int ticket = _orders.OpenSellOrder(_orders.GetLotSize(sl, OP_SELL), 0, 0);
-         if (ticket >= 0) _trailingStop.SetInitalStoploss(ticket,sl);
+         if (ticket >= 0) _trailingStop.SetInitalStoploss(ticket, sl);
       }
    }
    
@@ -391,36 +416,45 @@ void SetStoplossOnOpenOrder()
 {
    if (!allowTrading) return;
    
+   // loop through all open orders
    for (int i=0; i < OrdersTotal();++i)
    {
+	  // select next order
       if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
       {
+		 // check if magic number matches
          if (OrderMagicNumber() == MagicNumberBuy || OrderMagicNumber() == MagicNumberSell)
          {
+		    // check if order is for our symbol
             if (OrderSymbol() != _symbol) continue;
             
+			// ask strategy for the stoploss for this order
+
+            double strategySL = _strategy.GetStopLossForOpenOrder(_symbol);
             double points = MarketInfo(_symbol, MODE_POINT);
             double digits = MarketInfo(_symbol, MODE_DIGITS);
-            double mult   = (digits==3 || digits==5) ? 10 : 1;
-            
-            double strategySL = _strategy.GetStopLossForOpenOrder(_symbol);
+            double mult   = (digits == 3 || digits == 5) ? 10 : 1;            
+				
             if (OrderType() == OP_BUY)
             {
                double orderSl  = OrderOpenPrice() - (OrderHiddenSL * mult * points);
                
                if (!stopLossAtZigZagArrow && orderSl > strategySL && OrderHiddenSL > 0)
                {
-                  Print(_symbol, " -> order ",OrderTicket()," set SL to @ ", DoubleToStr(orderSl,5));
+				  // set stoploss to OrderHiddenSL
+                  Print(_symbol, " -> order ", OrderTicket()," set SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
                else if (strategySL > 0)
                {
-                  Print(_symbol, " -> order ",OrderTicket()," set SL to zigzag @ ", DoubleToStr(strategySL,5));
+				  // set stoploss to zigzag
+                  Print(_symbol, " -> order ", OrderTicket()," set SL to zigzag @ ", DoubleToStr(strategySL, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), strategySL);
                }
                else
                {
-                  Print(_symbol, " -> order ",OrderTicket()," set SL to @ ", DoubleToStr(orderSl,5));
+				  // set stoploss to OrderHiddenSL
+                  Print(_symbol, " -> order ", OrderTicket()," set SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
             }
@@ -429,17 +463,20 @@ void SetStoplossOnOpenOrder()
                double orderSl  = OrderOpenPrice() + (OrderHiddenSL * mult * points);
                if (!stopLossAtZigZagArrow && orderSl <  strategySL && OrderHiddenSL > 0)
                {
-                  Print(_symbol, " -> order ",OrderTicket()," set virtual SL to @ ", DoubleToStr(orderSl,5));
+				  // set stoploss to OrderHiddenSL
+                  Print(_symbol, " -> order ", OrderTicket()," set virtual SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
                else  if (strategySL > 0)
                {
-                  Print(_symbol, " -> order ",OrderTicket()," set virtual SL to zigzag @ ", DoubleToStr(strategySL,5));
+				  // set stoploss to zigzag
+                  Print(_symbol, " -> order " ,OrderTicket()," set virtual SL to zigzag @ ", DoubleToStr(strategySL, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), strategySL);
                }
                else
                {
-                  Print(_symbol, " -> order ",OrderTicket()," set SL to @ ", DoubleToStr(orderSl,5));
+				  // set stoploss to OrderHiddenSL
+                  Print(_symbol, " -> order ", OrderTicket()," set SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
             }

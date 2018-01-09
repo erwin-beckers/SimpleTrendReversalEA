@@ -60,7 +60,7 @@ void Clear()
    bool deleted = false;
    do {
       deleted = false;
-      for (int i = 0; i < ObjectsTotal();++i)
+      for (int i = 0; i < ObjectsTotal(); ++i)
       {
          string name = ObjectName(0, i);
          if (StringSubstr(name, 0, 1) == "_")
@@ -150,31 +150,8 @@ static int _line=0;
 //--------------------------------------------------------------------
 void OpenChart(string pair) 
 {
-   uint tf          = Period();
-    /*
-   ulong nextchart  = ChartFirst();
-   ulong newchartid = -1;
-  
-   string sym;
-   do 
-   {
-      sym = ChartSymbol(nextchart);
-      if(StringFind(sym, pair) >= 0) 
-      {
-         if ( Symbol() != pair)
-         {
-            ChartSetInteger(nextchart, CHART_BRING_TO_TOP, true);
-            ChartSetSymbolPeriod(nextchart, pair, tf);
-            ChartApplyTemplate(nextchart, ChartTemplate);
-            return;
-         }
-      }
-   } while((nextchart=ChartNext(nextchart)) != -1);
-   newchartid = ChartOpen(pair,tf);
-   ChartApplyTemplate(newchartid, ChartTemplate);
-   */
-   ulong newchartid = ChartOpen(pair,tf);
-   ChartApplyTemplate(newchartid, ChartTemplate);
+   ulong chartId = ChartOpen(pair, Period());
+   ChartApplyTemplate(chartId, ChartTemplate);
 }
 
 
@@ -243,11 +220,10 @@ void RefreshPairs()
 { 
    
    // refresh pairs
-   for(int i=0; i < _pairCount;++i)
+   for(int i = 0; i < _pairCount; ++i)
    {
      _pairs[i].Refresh();
-   }
-   
+   }   
 }
 
 
@@ -257,24 +233,24 @@ void DrawPairs()
    Clear();
    _line=0;
    
-   Draw(_line,0, "v"+version +" "+_utils.GetTimeFrame(Period())+ " Last update: " + TimeToStr(TimeCurrent()),White);
+   Draw(_line, 0, "v"+version +" "+_utils.GetTimeFrame(Period())+ " Last update: " + TimeToStr(TimeCurrent()),White);
    _line=2;
    
    // draw pairs
-   if (_pairCount>0)
+   if (_pairCount > 0)
    {
       _pairs[0].DrawHeader();
       int maxSignals = _pairs[0].GetMaxSignalCount();
       
-      for (int signals  = maxSignals; signals >=1; signals--)
+      for (int signals  = maxSignals; signals >= 1; signals--)
       {
-         for(int idx=0; idx < _pairCount;++idx)
+         for(int idx = 0; idx < _pairCount; ++idx)
          {
-           if (_pairs[idx].SignalCount() == signals)
-           {
-              _pairs[idx].Draw(_line);
-              _line++;
-           }
+            if (_pairs[idx].SignalCount() == signals)
+            {
+               _pairs[idx].Draw(_line);
+               _line++;
+            }
         }
       }
    }
@@ -284,19 +260,19 @@ void DrawPairs()
 void DrawOpenOrders()
 { 
    _line++;
-   Draw(_line,0,"Opened",White);
-   Draw(_line,2,"Symbol",White);
-   Draw(_line,3,"Type",White);
-   Draw(_line,4,"Lots",White,0);
-   Draw(_line,5,"Entry",White,0);
-   Draw(_line,6,"S/L (pips)",White,40);
-   Draw(_line,7,"Profit",White,60);
-   Draw(_line,8,"Pips",White,80);
-   Draw(_line,9,"R:R",White,80);
+   Draw(_line, 0, "Opened", White);
+   Draw(_line, 2, "Symbol", White);
+   Draw(_line, 3, "Type", White);
+   Draw(_line, 4, "Lots", White, 0);
+   Draw(_line, 5, "Entry", White, 0);
+   Draw(_line, 6, "S/L (pips)", White, 40);
+   Draw(_line, 7, "Profit", White, 60);
+   Draw(_line, 8, "Pips", White, 80);
+   Draw(_line, 9, "R:R", White, 80);
    _line++;
    
    // show open orders
-   for (int i=0; i < OrdersTotal();++i)
+   for (int i = 0; i < OrdersTotal(); ++i)
    {
       if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
       {
@@ -312,6 +288,7 @@ void DrawOpenOrders()
             double digits   = MarketInfo(symbol, MODE_DIGITS);
             double SL       = 0;
             double RR       = 0;
+
             for (int x=0; x < _pairCount;++x)
             {
                if (_pairs[x].GetSymbol() == symbol)
@@ -321,8 +298,10 @@ void DrawOpenOrders()
                   break;
                }
             }
+
             double mult = 1;
             if (digits ==3 || digits==5) mult = 10;
+
             string arrow      = CharToString(233);
             color  arrowColor = Green;
             if (OrderType() == OP_BUY)
@@ -347,15 +326,15 @@ void DrawOpenOrders()
                SL /= mult;
                SL /= points;
             }
-            Draw(_line,0, TimeToStr(OrderOpenTime()), White,0);
-            Draw(_line,2, OrderSymbol()  , White,0);
+            Draw(_line, 0, TimeToStr(OrderOpenTime()), White,0);
+            Draw(_line, 2, OrderSymbol()  , White,0);
             DrawWingDings(_line,3, arrow  , arrowColor,0);
-            Draw(_line,4, DoubleToString(lots,4)  , White,0);
-            Draw(_line,5, DoubleToString(OrderOpenPrice(),5)  , White,0);
-            Draw(_line,6, DoubleToString(SL, 2), SL > 0 ? Green:Red, 40);
-            Draw(_line,7, DoubleToString(profit,2) , profit > 0 ? Green:Red,60);
-            Draw(_line,8, DoubleToString(pips,2) , pips > 0 ? Green:Red,80);
-            Draw(_line,9, DoubleToString(RR,2)+":1" , RR > 0 ? Green:Red,80);
+            Draw(_line, 4, DoubleToString(lots,4)  , White,0);
+            Draw(_line, 5, DoubleToString(OrderOpenPrice(),5)  , White,0);
+            Draw(_line, 6, DoubleToString(SL, 2), SL > 0 ? Green:Red, 40);
+            Draw(_line, 7, DoubleToString(profit,2) , profit > 0 ? Green:Red,60);
+            Draw(_line, 8, DoubleToString(pips,2) , pips > 0 ? Green:Red,80);
+            Draw(_line, 9, DoubleToString(RR,2)+":1" , RR > 0 ? Green:Red,80);
             
             _line++;
          }
@@ -365,8 +344,7 @@ void DrawOpenOrders()
 
 //--------------------------------------------------------------------
 void UpdateTradeHistoryPanel()
-{ 
-  
+{   
    _labelBalance.Text    =  DoubleToString(AccountBalance(),2) + " " + AccountCurrency();
    _labelEquity.Text     =  DoubleToString(AccountEquity(),2)  + " " + AccountCurrency();
    _labelFreeMargin.Text =  DoubleToString(AccountFreeMargin(),2) + " " + AccountCurrency();
@@ -441,13 +419,13 @@ int OnInit()
    // add currency pairs
    ArrayResize(_pairs,100);
    string pairs[130];
-   int pairCount=  StringSplit(TradePairs,StringGetCharacter(" ",0),pairs);
-   for (int i=0; i <  SymbolsTotal(true);++i)
+   int pairCount =  StringSplit(TradePairs,StringGetCharacter(" ", 0), pairs);
+   for (int i=0; i <  SymbolsTotal(true); ++i)
    {
-      string symbol = SymbolName(i,true);
-      for (int x=0; x < pairCount;++x)
+      string symbol = SymbolName(i, true);
+      for (int x=0; x < pairCount; ++x)
       {
-         if (StringFind(symbol, pairs[x])>=0)
+         if (StringFind(symbol, pairs[x]) >= 0 )
          {
             _pairs[_pairCount] = new CPair(symbol, new CMrdFXStrategy(), _newsFilter, _utils);
             _pairCount++;
@@ -504,10 +482,10 @@ void OnTick()
   }
   else
   {
-   Comment("");
+    Comment("");
   }
   
-  // refresh news
+   // refresh news
    _newsFilter.Check();
    _utils.Refresh();
    
@@ -546,15 +524,19 @@ void OnTick()
 //--------------------------------------------------------------------
 void OnChartEvent(const int id, const long& lparam, const double& dparam, const string& sparam) 
 {
+   // did user click on the chart ?
    if (id == CHARTEVENT_OBJECT_CLICK)
    {
+	  // and did he click on on of our objects
       if (StringSubstr(sparam, 0, 2) == "_l") 
       {
-        int len=StringLen(sparam);
-        if (StringSubstr(sparam, len - 2, 2)=="c1" ||StringSubstr(sparam, len - 2, 2)=="c2")
-        {
-            OpenChart(ObjectDescription(sparam));
-        }
+		// did user click on the name of a pair ?
+		int len = StringLen(sparam);
+		if (StringSubstr(sparam, len - 2, 2)=="c1" ||StringSubstr(sparam, len - 2, 2)=="c2")
+		{
+			// yes then open the chart for this pair
+			OpenChart(ObjectDescription(sparam));
+		}
       }
    }
 }

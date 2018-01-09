@@ -8,12 +8,14 @@
 #property strict
 
 
+//--------------------------------------------------------------------
 class CIndicator
 {
 public:
    string   Name;
    bool     IsValid;
    
+//--------------------------------------------------------------------
    CIndicator(string name)
    {
       Name    = name;
@@ -21,6 +23,7 @@ public:
    }
 };
 
+//--------------------------------------------------------------------
 class CSignal
 {
 public:
@@ -28,6 +31,7 @@ public:
    bool   IsSell;
    double StopLoss;
    
+   //--------------------------------------------------------------------
    void Reset()
    {
       IsBuy    = false;
@@ -36,11 +40,11 @@ public:
    }
 };
 
+//--------------------------------------------------------------------
 interface IStrategy
 {
    CSignal*       Refresh(string symbol);
    int            GetIndicatorCount();
    CIndicator*    GetIndicator(int indicator);
    double         GetStopLossForOpenOrder(string symbol);
-
 };
