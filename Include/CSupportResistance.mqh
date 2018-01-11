@@ -87,14 +87,18 @@ public:
    }
    
    //+------------------------------------------------------------------+
-   bool IsAtSupportResistance(double price)
+   bool IsAtSupportResistance(double price, double pips)
    {
       CalculateSR();
+      double points   = MarketInfo(_symbol, MODE_POINT);
+      double digits   = MarketInfo(_symbol, MODE_DIGITS);
+      double mult     = (digits==3 || digits==5) ? 10.0:1;
+      pips = pips * mult * points;
       
-      if (DoesSRLevelExists(price, _linesW1, _maxLineW1, _maxDistanceW1)) return true;
-      if (DoesSRLevelExists(price, _linesD1, _maxLineD1, _maxDistanceD1)) return true;
-      if (DoesSRLevelExists(price, _linesH4, _maxLineH4, _maxDistanceH4)) return true;
-      if (DoesSRLevelExists(price, _linesH1, _maxLineH1, _maxDistanceH1)) return true;
+      if (DoesSRLevelExists(price, _linesW1, _maxLineW1, pips)) return true;
+      if (DoesSRLevelExists(price, _linesD1, _maxLineD1, pips)) return true;
+      if (DoesSRLevelExists(price, _linesH4, _maxLineH4, pips)) return true;
+      if (DoesSRLevelExists(price, _linesH1, _maxLineH1, pips)) return true;
       return false;
    }
    

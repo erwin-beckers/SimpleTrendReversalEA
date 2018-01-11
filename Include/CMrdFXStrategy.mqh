@@ -9,6 +9,7 @@
 
 extern string     _srfilter_                   = " ------- S&R filter ------------";
 extern bool        UseSupportResistanceFilter  = false;
+extern int         MaxPipsFromSR               = 50;
 
 extern string     __trendfilter                = " ------- SMA 200 trendfilter ------------";
 extern bool        UseSma200TrendFilter        = false;
@@ -229,7 +230,7 @@ public:
          
          if (UseSupportResistanceFilter)
          {
-          _indicators[index].IsValid = _supportResistance.IsAtSupportResistance(_signal.StopLoss);
+          _indicators[index].IsValid = _supportResistance.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
           index++;
          }
       }
