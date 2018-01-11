@@ -105,9 +105,9 @@ public:
 private:
    //+------------------------------------------------------------------+
    bool DoesSRLevelExists(double price, SRLine* &lines[], int maxlines, double maxDistance )
-   {
+   { 
       if (maxlines <= 0) return false;
-       for (int i=0; i < maxlines;++i)
+      for (int i=0; i < maxlines;++i)
       {
          double diff = MathAbs(price - lines[i].Price);
          if (diff < maxDistance) 
@@ -231,9 +231,9 @@ private:
       maxDistance =  priceRange/div;
       
       CZigZag* zigZag = new CZigZag(bars,  tfPeriod);  
-      zigZag._extDepth = ExtDepth;
-      zigZag._extDeviation = ExtDeviation;
-      zigZag._extBackstep = ExtBackstep;
+      zigZag._extDepth = 12;
+      zigZag._extDeviation = 5;
+      zigZag._extBackstep = 3;
       zigZag.Refresh(_symbol);
       
       bool skipFirstArrow=true;
@@ -349,8 +349,8 @@ private:
       _maxDistanceW1 = 0;
       
       if (SR_Weekly)  CalculateSRForTimeFrame(PERIOD_W1, _maxLineW1, _linesW1, _maxDistanceW1);
-      if (SR_Daily)   CalculateSRForTimeFrame(PERIOD_W1, _maxLineD1, _linesD1, _maxDistanceD1);
-      if (SR_4Hours)  CalculateSRForTimeFrame(PERIOD_W1, _maxLineH4, _linesH4, _maxDistanceH4);
-      if (SR_1Hours)  CalculateSRForTimeFrame(PERIOD_W1, _maxLineH1, _linesH1, _maxDistanceH1);
+      if (SR_Daily)   CalculateSRForTimeFrame(PERIOD_D1, _maxLineD1, _linesD1, _maxDistanceD1);
+      if (SR_4Hours)  CalculateSRForTimeFrame(PERIOD_H4, _maxLineH4, _linesH4, _maxDistanceH4);
+      if (SR_1Hours)  CalculateSRForTimeFrame(PERIOD_H1, _maxLineH1, _linesH1, _maxDistanceH1);
    }
 };

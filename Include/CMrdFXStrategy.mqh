@@ -9,7 +9,7 @@
 
 extern string     _srfilter_                   = " ------- S&R filter ------------";
 extern bool        UseSupportResistanceFilter  = false;
-extern int         MaxPipsFromSR               = 50;
+extern int         MaxPipsFromSR               = 30;
 
 extern string     __trendfilter                = " ------- SMA 200 trendfilter ------------";
 extern bool        UseSma200TrendFilter        = false;
@@ -200,12 +200,6 @@ public:
          _indicators[i].IsValid = false;
       }
       _signal.Reset();
-      
-      if (_symbol=="GBPUSD")
-      {
-        if (zigZagBar >=1)
-           Print(_symbol, " bar:", zigZagBar, " mbfx:", mbfxOk," trend:",trendOk, " ma15:",sma15Ok);
-      }
       
       // set indicators
       if (zigZagBar >= 1 && (zigZagBuy || zigZagSell) )
