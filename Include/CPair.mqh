@@ -206,7 +206,7 @@ public:
 
       if (validColor != clrGray)
       {
-         if (zigClr == Green)  DrawText(line, xpos-42, "buy" , White, 2);
+         if (zigClr == Green)  DrawText(line, xpos-42, "buy", White, 2);
          if (zigClr == Red) DrawText(line, xpos-42, "sell", White, 2);
       }
    }

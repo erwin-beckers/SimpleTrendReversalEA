@@ -30,8 +30,15 @@ private:
    int               _maxBars;
    int               _period;
 public: 
+   int               _extDepth;
+   int               _extDeviation;
+   int               _extBackstep;
+   
    CZigZag(int maxBars=500, int timePeriod=0)
    {
+      _extDepth = ExtDepth;
+      _extDeviation = ExtDeviation;
+      _extBackstep = ExtBackstep;
       _maxBars=maxBars;
       _period=timePeriod;
       ArrayResize(_zigZagBufferBuy ,_maxBars+5,0);
@@ -56,17 +63,17 @@ public:
       
       ArrayInitialize(_zigZagBufferBuy,  0);
       ArrayInitialize(_zigZagBufferSell, 0);
-      for(shift=_maxBars-ExtDepth; shift>=0; shift--)
+      for(shift=_maxBars-_extDepth; shift>=0; shift--)
       {
-         val=iLow(symbol, _period, iLowest(symbol, _period,MODE_LOW,ExtDepth,shift+startBar));
+         val=iLow(symbol, _period, iLowest(symbol, _period,MODE_LOW,_extDepth,shift+startBar));
          if(val==lastlow) val=0.0;
          else 
          { 
             lastlow=val; 
-            if(( iLow(symbol, _period, shift+startBar)-val)>(ExtDeviation*symbolPoint)) val=0.0;
+            if(( iLow(symbol, _period, shift+startBar)-val)>(_extDeviation*symbolPoint)) val=0.0;
             else
             {
-               for(back=1; back<=ExtBackstep; back++)
+               for(back=1; back<=_extBackstep; back++)
                {
                   res=_zigZagBufferBuy[shift+back];
                   if((res!=0)&&(res>val)) _zigZagBufferBuy[shift+back]=0.0; 
@@ -75,15 +82,15 @@ public:
          } 
          _zigZagBufferBuy[shift]=val;
          //--- high
-         val=iHigh(symbol,_period, iHighest(symbol, _period,MODE_HIGH,ExtDepth,shift+startBar));
+         val=iHigh(symbol,_period, iHighest(symbol, _period,MODE_HIGH,_extDepth,shift+startBar));
          if(val==lasthigh) val=0.0;
          else 
          {
             lasthigh=val;
-            if((val-iHigh(symbol,_period, shift+startBar))>(ExtDeviation*symbolPoint)) val=0.0;
+            if((val-iHigh(symbol,_period, shift+startBar))>(_extDeviation*symbolPoint)) val=0.0;
             else
             {
-               for(back=1; back<=ExtBackstep; back++)
+               for(back=1; back<=_extBackstep; back++)
                {
                   res=_zigZagBufferSell[shift+back];
                   if((res!=0)&&(res<val)) _zigZagBufferSell[shift+back]=0.0; 
@@ -97,7 +104,7 @@ public:
       lasthigh=-1; lasthighpos=-1;
       lastlow=-1;  lastlowpos=-1;
    
-      for(shift=_maxBars-ExtDepth; shift>=0; shift--)
+      for(shift=_maxBars-_extDepth; shift>=0; shift--)
       {
          curlow =_zigZagBufferBuy[shift];
          curhigh=_zigZagBufferSell[shift];
@@ -138,7 +145,7 @@ public:
      
       for(shift=_maxBars-1; shift>=0; shift--)
       {
-         if(shift>=_maxBars-ExtDepth) _zigZagBufferBuy[shift]=0.0;
+         if(shift>=_maxBars-_extDepth) _zigZagBufferBuy[shift]=0.0;
          else
          {
             res=_zigZagBufferSell[shift];

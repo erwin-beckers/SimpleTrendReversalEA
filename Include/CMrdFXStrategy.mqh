@@ -18,13 +18,11 @@ extern string     __signals__                  = " ------- Candles to look back 
 extern int        ZigZagCandles                = 10;
 extern int        MBFXCandles                  = 10;
 
-#include <CSupportResistance.mqh>
 #include <CStrategy.mqh>
 #include <CZigZag.mqh>
 #include <CMBFX.mqh>
 #include <CTrendLine.mqh>
-
-
+#include <CSupportResistance.mqh>
 
 extern string     __movingaverage__            = " ------- moving average settings ------------";
 extern int        MovingAveragePeriod          = 15;
@@ -53,10 +51,10 @@ public:
       _mbfx              = new CMBFX();
       _trendLine         = new CTrendLine();
       _signal            = new CSignal();
-      
-      
-      _indicatorCount = UseSma200TrendFilter ? 5 : 4; // zigzag, mbfx, trendline, sma15 (and sma 200)
-      if (UseSupportResistanceFilter) _indicatorCount++;
+         
+      _indicatorCount = 4; // zigzag, mbfx, trendline, sma15
+      if (UseSma200TrendFilter) _indicatorCount++; //5
+      if (UseSupportResistanceFilter) _indicatorCount++; //6
        
       ArrayResize(_indicators, _indicatorCount);
       _indicators[0] = new CIndicator("ZigZag");
@@ -203,6 +201,12 @@ public:
       }
       _signal.Reset();
       
+      if (_symbol=="GBPUSD")
+      {
+        if (zigZagBar >=1)
+           Print(_symbol, " bar:", zigZagBar, " mbfx:", mbfxOk," trend:",trendOk, " ma15:",sma15Ok);
+      }
+      
       // set indicators
       if (zigZagBar >= 1 && (zigZagBuy || zigZagSell) )
       {
@@ -230,8 +234,8 @@ public:
          
          if (UseSupportResistanceFilter)
          {
-          _indicators[index].IsValid = _supportResistance.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
-          index++;
+           _indicators[index].IsValid = _supportResistance.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
+           index++;
          }
       }
       return _signal;
@@ -254,7 +258,7 @@ public:
    {
       double points = MarketInfo(_symbol, MODE_POINT);
       double digits = MarketInfo(_symbol, MODE_DIGITS);
-      double mult   = (digits==3 || digits==5) ? 10 : 1;
+      double mult   = (digits == 3 || digits == 5) ? 10 : 1;
       _zigZag.Refresh(_symbol);
       
       // find last zigzag arrow

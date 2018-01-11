@@ -427,8 +427,7 @@ int OnInit()
       {
          if (StringFind(symbol, pairs[x]) >= 0 )
          {
-            CMrdFXStrategy* strategy = new CMrdFXStrategy(symbol);
-            _pairs[_pairCount] = new CPair(symbol, strategy, _newsFilter, _utils);
+            _pairs[_pairCount] = new CPair(symbol, new CMrdFXStrategy(symbol), _newsFilter, _utils);
             _pairCount++;
             break;
          }

@@ -44,7 +44,7 @@ public:
 class CSupportResistance
 {
 private:
-   string _symbol;
+   string  _symbol;
    int     _maxLineH1;
    int     _maxLineH4;
    int     _maxLineD1;
@@ -119,7 +119,7 @@ private:
    }
    
    //+------------------------------------------------------------------+
-   int GetTouches(CZigZag* &zigZag, int tfPeriod, int barPrice,int maxBars, double& price, datetime& startTime, int& startBar, double &maxDistance)
+   int GetTouches(CZigZag* zigZag, int tfPeriod, int barPrice,int maxBars, double& price, datetime& startTime, int& startBar, double &maxDistance)
    {
       int    cnt        = 0;
       double totalPrice = price;
@@ -199,11 +199,6 @@ private:
       int barsAvailable = iBars(_symbol, tfPeriod);
       int bars = MathMin( BarsHistory, barsAvailable); 
       
-      
-      ExtDepth             = 12;
-      ExtDeviation         =  5;
-      ExtBackstep          =  3; 
-      
       int lowestBar       = iLowest(_symbol , tfPeriod, MODE_LOW , bars, 0);
       int highestBar      = iHighest(_symbol, tfPeriod, MODE_HIGH, bars, 0);
       double highestPrice = iHigh(_symbol, tfPeriod, highestBar);
@@ -236,6 +231,9 @@ private:
       maxDistance =  priceRange/div;
       
       CZigZag* zigZag = new CZigZag(bars,  tfPeriod);  
+      zigZag._extDepth = ExtDepth;
+      zigZag._extDeviation = ExtDeviation;
+      zigZag._extBackstep = ExtBackstep;
       zigZag.Refresh(_symbol);
       
       bool skipFirstArrow=true;
