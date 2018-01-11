@@ -43,8 +43,8 @@ public:
 //--------------------------------------------------------------------
 interface IStrategy
 {
-   CSignal*       Refresh(string symbol);
+   CSignal*       Refresh();
    int            GetIndicatorCount();
    CIndicator*    GetIndicator(int indicator);
-   double         GetStopLossForOpenOrder(string symbol);
+   double         GetStopLossForOpenOrder();
 };

@@ -238,7 +238,7 @@ public:
    //--------------------------------------------------------------------
    void Refresh()
    {
-     _signal = _strategy.Refresh(_symbol);
+     _signal = _strategy.Refresh();
      
       string      news = "";
       _allowedToTradeNews       = _newsFilter.GetNews(_symbol, news, _impact);  
@@ -430,7 +430,7 @@ void SetStoplossOnOpenOrder()
             
 			// ask strategy for the stoploss for this order
 
-            double strategySL = _strategy.GetStopLossForOpenOrder(_symbol);
+            double strategySL = _strategy.GetStopLossForOpenOrder();
             double points = MarketInfo(_symbol, MODE_POINT);
             double digits = MarketInfo(_symbol, MODE_DIGITS);
             double mult   = (digits == 3 || digits == 5) ? 10 : 1;            

@@ -5,10 +5,10 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2017, Erwin Beckers"
 #property link      "www.erwinbeckers.nl"
-#property version   "1.18.3"
+#property version   "1.18.4"
 #property strict
 
-string version = "1.18.3";
+string version = "1.18.4";
 
 #include <CPair.mqh>
 #include <CTrailingStop.mqh>
@@ -427,7 +427,8 @@ int OnInit()
       {
          if (StringFind(symbol, pairs[x]) >= 0 )
          {
-            _pairs[_pairCount] = new CPair(symbol, new CMrdFXStrategy(), _newsFilter, _utils);
+            CMrdFXStrategy* strategy = new CMrdFXStrategy(symbol);
+            _pairs[_pairCount] = new CPair(symbol, strategy, _newsFilter, _utils);
             _pairCount++;
             break;
          }

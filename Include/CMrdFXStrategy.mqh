@@ -7,6 +7,9 @@
 #property link      "https://www.erwinbeckers.nl"
 #property strict
 
+extern string     _srfilter_                   = " ------- S&R filter ------------";
+extern bool        UseSupportResistanceFilter  = false;
+
 extern string     __trendfilter                = " ------- SMA 200 trendfilter ------------";
 extern bool        UseSma200TrendFilter        = false;
 
@@ -14,6 +17,7 @@ extern string     __signals__                  = " ------- Candles to look back 
 extern int        ZigZagCandles                = 10;
 extern int        MBFXCandles                  = 10;
 
+#include <CSupportResistance.mqh>
 #include <CStrategy.mqh>
 #include <CZigZag.mqh>
 #include <CMBFX.mqh>
@@ -29,32 +33,45 @@ extern int        MovingAverageType            = MODE_SMA;
 class CMrdFXStrategy : public IStrategy
 {
 private:
-   CZigZag*       _zigZag;         
-   CMBFX*         _mbfx;         
-   CTrendLine*    _trendLine; 
-   int            _indicatorCount;
-   CIndicator*    _indicators[];
-   CSignal*       _signal;
+   CSupportResistance* _supportResistance;
+   CZigZag*            _zigZag;         
+   CMBFX*              _mbfx;         
+   CTrendLine*         _trendLine; 
+   int                 _indicatorCount;
+   CIndicator*         _indicators[];
+   CSignal*            _signal;
+   string              _symbol;
    
 public:
    //--------------------------------------------------------------------
-   CMrdFXStrategy()
+   CMrdFXStrategy(string symbol)
    {
-      _zigZag       = new CZigZag();
-      _mbfx         = new CMBFX();
-      _trendLine    = new CTrendLine();
-      _signal       = new CSignal();
+      _symbol            = symbol;
+      _supportResistance = new CSupportResistance(_symbol);
+      _zigZag            = new CZigZag();
+      _mbfx              = new CMBFX();
+      _trendLine         = new CTrendLine();
+      _signal            = new CSignal();
+      
       
       _indicatorCount = UseSma200TrendFilter ? 5 : 4; // zigzag, mbfx, trendline, sma15 (and sma 200)
-      
+      if (UseSupportResistanceFilter) _indicatorCount++;
+       
       ArrayResize(_indicators, _indicatorCount);
       _indicators[0] = new CIndicator("ZigZag");
       _indicators[1] = new CIndicator("MBFX");
       _indicators[2] = new CIndicator("Trend");
       _indicators[3] = new CIndicator("MA15");
+      int index = 4;
       if (UseSma200TrendFilter)
       {
-         _indicators[4] = new CIndicator("MA200");
+         _indicators[index] = new CIndicator("MA200");
+         index++;
+      }
+      if (UseSupportResistanceFilter) 
+      {
+        _indicators[index] = new CIndicator("S&R");
+        index++;
       }
    }
    
@@ -65,6 +82,7 @@ public:
       delete _mbfx;
       delete _trendLine;
       delete _signal;
+      delete _supportResistance;
       
       for (int i=0; i < _indicatorCount;++i)
       {
@@ -74,11 +92,11 @@ public:
    }
    
    //--------------------------------------------------------------------
-   CSignal* Refresh(string symbol)
+   CSignal* Refresh()
    {
-      _zigZag.Refresh(symbol);
-      _mbfx.Refresh(symbol);
-      _trendLine.Refresh(symbol);
+      _zigZag.Refresh(_symbol);
+      _mbfx.Refresh(_symbol);
+      _trendLine.Refresh(_symbol);
       
       int  zigZagBar    = -1;
       bool zigZagBuy    = false;
@@ -110,8 +128,8 @@ public:
       if (zigZagBuy && zigZagBar > 0)
       {
          // sma 200 trendline
-         double ima200 = iMA(symbol, PERIOD_D1, 200, 0, MODE_SMA,PRICE_CLOSE, 1);
-         if ( iClose(symbol, 0, 1) >= ima200 )  sma200ok = true;
+         double ima200 = iMA(_symbol, PERIOD_D1, 200, 0, MODE_SMA,PRICE_CLOSE, 1);
+         if ( iClose(_symbol, 0, 1) >= ima200 )  sma200ok = true;
           
          // MBFX should be green at the moment 
          // and should have been below < 30 some candles ago
@@ -134,8 +152,8 @@ public:
          }
    
          // rule #4: price should be above 15 SMA 
-         double ma1 = iMA(symbol, 0, MovingAveragePeriod, 0, MovingAverageType, PRICE_CLOSE, 1);
-         if ( iClose(symbol, 0, 1) > ma1 )  
+         double ma1 = iMA(_symbol, 0, MovingAveragePeriod, 0, MovingAverageType, PRICE_CLOSE, 1);
+         if ( iClose(_symbol, 0, 1) > ma1 )  
          {
             sma15Ok = true;
          }
@@ -145,8 +163,8 @@ public:
       // SELL signals
       if (zigZagSell && zigZagBar > 0)
       {
-         double ima200 = iMA(symbol, PERIOD_D1, 200, 0, MODE_SMA,PRICE_CLOSE, 1);
-         if ( iClose(symbol, 0, 1) <= ima200 ) sma200ok = true;
+         double ima200 = iMA(_symbol, PERIOD_D1, 200, 0, MODE_SMA,PRICE_CLOSE, 1);
+         if ( iClose(_symbol, 0, 1) <= ima200 ) sma200ok = true;
           
          // MBFX should now be red
          // and should been above > 70 some candles ago
@@ -170,8 +188,8 @@ public:
          }
                
          // rule #4: and price below SMA15 on previous candle
-         double ma1 = iMA(symbol, 0, MovingAveragePeriod, 0, MovingAverageType, PRICE_CLOSE, 1);
-         if (   iClose(symbol, 0, 1) < ma1 )
+         double ma1 = iMA(_symbol, 0, MovingAveragePeriod, 0, MovingAverageType, PRICE_CLOSE, 1);
+         if (   iClose(_symbol, 0, 1) < ma1 )
          {
            sma15Ok = true;
          }
@@ -190,22 +208,29 @@ public:
          if (zigZagBuy) 
          {
             _signal.IsBuy    = true;
-            _signal.StopLoss = iLow(symbol, 0, zigZagBar);
+            _signal.StopLoss = iLow(_symbol, 0, zigZagBar);
          }
          else if (zigZagSell)
          {
             _signal.IsSell   = true;
-            _signal.StopLoss = iHigh(symbol, 0, zigZagBar);
+            _signal.StopLoss = iHigh(_symbol, 0, zigZagBar);
          }
          
          _indicators[0].IsValid = true;    // zigzag         
          _indicators[1].IsValid = mbfxOk;  // mbfx
          _indicators[2].IsValid = trendOk; // trend
          _indicators[3].IsValid = sma15Ok; // ma15
-         
+         int index = 4;
          if (UseSma200TrendFilter)
          {
-            _indicators[4].IsValid = sma200ok; // ma200
+            _indicators[index].IsValid = sma200ok; // ma200
+            index++;
+         }
+         
+         if (UseSupportResistanceFilter)
+         {
+          _indicators[index].IsValid = _supportResistance.IsAtSupportResistance(_signal.StopLoss);
+          index++;
          }
       }
       return _signal;
@@ -224,12 +249,12 @@ public:
    }
    
    //--------------------------------------------------------------------
-   double GetStopLossForOpenOrder(string symbol)
+   double GetStopLossForOpenOrder()
    {
-      double points = MarketInfo(symbol, MODE_POINT);
-      double digits = MarketInfo(symbol, MODE_DIGITS);
+      double points = MarketInfo(_symbol, MODE_POINT);
+      double digits = MarketInfo(_symbol, MODE_DIGITS);
       double mult   = (digits==3 || digits==5) ? 10 : 1;
-      _zigZag.Refresh(symbol);
+      _zigZag.Refresh(_symbol);
       
       // find last zigzag arrow
       int zigZagBar = -1;
@@ -254,11 +279,11 @@ public:
       {
          if (arrow == ARROW_BUY)
          {
-            return iLow(symbol, 0, zigZagBar);
+            return iLow(_symbol, 0, zigZagBar);
          }
          else if (arrow == ARROW_SELL)
          {
-            return iHigh(symbol, 0, zigZagBar);
+            return iHigh(_symbol, 0, zigZagBar);
          }
       }
       return 0;

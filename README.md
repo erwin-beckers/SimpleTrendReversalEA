@@ -8,6 +8,9 @@ www.forexfactory.com/showthread.php?t=713593
 
 Version history:
 
+1.18.4
+- added (optional) S&R filter where EA will only open trades which are appearing at S&R levels
+
 1.18.3
 - code refactoring
 - fixed trade panel showed wrong nr of pips for today's profit
