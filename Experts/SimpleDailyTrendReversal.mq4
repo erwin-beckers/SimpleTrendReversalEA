@@ -218,7 +218,6 @@ void DrawText(int line, int xPos, string text, color clr)
 //--------------------------------------------------------------------
 void RefreshPairs()
 { 
-   
    // refresh pairs
    for(int i = 0; i < _pairCount; ++i)
    {
@@ -230,6 +229,7 @@ void RefreshPairs()
 //--------------------------------------------------------------------
 void DrawPairs()
 {
+   if (IsTesting() || IsOptimization()) return;
    Clear();
    _line=0;
    
@@ -259,6 +259,7 @@ void DrawPairs()
 //--------------------------------------------------------------------
 void DrawOpenOrders()
 { 
+   if (IsTesting() || IsOptimization()) return;
    _line++;
    Draw(_line, 0, "Opened", White);
    Draw(_line, 2, "Symbol", White);
@@ -345,6 +346,7 @@ void DrawOpenOrders()
 //--------------------------------------------------------------------
 void UpdateTradeHistoryPanel()
 {   
+   if (IsTesting() || IsOptimization()) return;
    _labelBalance.Text    =  DoubleToString(AccountBalance(), 2) + " " + AccountCurrency();
    _labelEquity.Text     =  DoubleToString(AccountEquity(), 2)  + " " + AccountCurrency();
    _labelFreeMargin.Text =  DoubleToString(AccountFreeMargin(), 2) + " " + AccountCurrency();
@@ -386,27 +388,6 @@ void UpdateTradeHistoryPanel()
 int OnInit()
 {
    Print("--- Simple Daily Trend Reversal ",version," --- ");
-   if (allowTrading)
-   {
-      if (MoneyManagement == UseFixedLotSize) Print("  Using fixed lot size:", FixedLotSize);
-      else if (MoneyManagement == UseFixedAmount) Print("  Using fixed amount:",FixedAmount, " ",AccountCurrency() );
-      else if (MoneyManagement == UsePercentageOfAccountBalance) Print("  Using risk :", RiskPercentage," %");
-      else Print("  unknown money management... ",MoneyManagement);
-      
-      if (TrailingMethod == UseTrailingStops) Print("  Using trailing stops ");
-      else if (TrailingMethod == UseRiskRewardRatios) 
-      {
-         Print("  Using risk reward ratios");
-         if (TakeProfitAt == RR_1_1) Print("  take profit at 1:1");
-         else if (TakeProfitAt == RR_2_1) Print("  take profit at RR: 2:1");
-         else if (TakeProfitAt == RR_3_1) Print("  take profit at RR: 3:1");
-         else if (TakeProfitAt == RR_4_1) Print("  take profit at RR: 4:1");
-         else if (TakeProfitAt == RR_5_1) Print("  take profit at RR: 5:1");
-         else if (TakeProfitAt == RR_6_1) Print("  take profit at RR: 6:1");
-         else Print("  unknown TakeProfitAt ",TakeProfitAt);
-      }
-      else Print("  unknown trailing method... ",TrailingMethod);
-   }
    
    ObjectsDeleteAll();
    Clear();
@@ -417,19 +398,28 @@ int OnInit()
    _pairCount    = 0;
    
    // add currency pairs
-   ArrayResize(_pairs,100);
-   string pairs[130];
-   int pairCount =  StringSplit(TradePairs,StringGetCharacter(" ", 0), pairs);
-   for (int i=0; i <  SymbolsTotal(true); ++i)
+   ArrayResize(_pairs, 100);
+   
+   if (IsTesting() || IsOptimization())
    {
-      string symbol = SymbolName(i, true);
-      for (int x=0; x < pairCount; ++x)
+      _pairs[0]  = new CPair(Symbol(), new CMrdFXStrategy(Symbol()), _newsFilter, _utils);
+      _pairCount = 1;
+   }
+   else
+   {
+      string pairs[130];
+      int pairCount =  StringSplit(TradePairs,StringGetCharacter(" ", 0), pairs);
+      for (int i=0; i <  SymbolsTotal(true); ++i)
       {
-         if (StringFind(symbol, pairs[x]) >= 0 )
+         string symbol = SymbolName(i, true);
+         for (int x=0; x < pairCount; ++x)
          {
-            _pairs[_pairCount] = new CPair(symbol, new CMrdFXStrategy(symbol), _newsFilter, _utils);
-            _pairCount++;
-            break;
+            if (StringFind(symbol, pairs[x]) >= 0 )
+            {
+               _pairs[_pairCount] = new CPair(symbol, new CMrdFXStrategy(symbol), _newsFilter, _utils);
+               _pairCount++;
+               break;
+            }
          }
       }
    }

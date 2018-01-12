@@ -73,7 +73,9 @@ public:
       double totalAmountLost     = 0; 
       datetime now               = TimeCurrent();
       datetime yesterday         = TimeCurrent() - 60 * 60 * 24;
-            
+      
+      if (IsTesting() || IsOptimization()) return;      
+      
       for (int i=0; i < OrdersHistoryTotal(); ++i)
       {
         if(OrderSelect(i, SELECT_BY_POS,MODE_HISTORY))

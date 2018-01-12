@@ -281,9 +281,12 @@ public:
       if (!allowTrading) return;  
 
       // is market open ?
-      if (!MarketInfo(_symbol, MODE_TRADEALLOWED)) return;
-
-	  // is spread on this pair ok ?
+      if (!IsTesting() && !IsOptimization())
+      {
+        if (!MarketInfo(_symbol, MODE_TRADEALLOWED)) return;
+      }
+	  
+	   // is spread on this pair ok ?
       if (!_orders.IsSpreadOk()) return;
      
       // do we have a valid signal ?
@@ -310,7 +313,10 @@ public:
       if (!allowTrading) return;  
 	  
       // is market open ?
-      if (!MarketInfo(_symbol, MODE_TRADEALLOWED)) return;
+      if (!IsTesting() && !IsOptimization())
+      {
+        if (!MarketInfo(_symbol, MODE_TRADEALLOWED)) return;
+      }
 	  
 	  // is spread on this pair ok ?
       if (!_orders.IsSpreadOk()) return;

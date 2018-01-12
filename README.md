@@ -5,6 +5,11 @@ Read more about the strategy here:
 
 www.forexfactory.com/showthread.php?t=713593
 
+Ideas:
+- set SL x pips below/above S&R line
+- Close part of position when price encounters next SR line then trail the remaining position 
+- calculate RR based on SL and next S&R line
+
 
 Version history:
 
