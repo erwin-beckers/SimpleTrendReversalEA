@@ -389,12 +389,14 @@ public:
          double mult     = (digits == 3 || digits == 5) ? 10 : 1;
          double orderSl  = price - (OrderHiddenSL * mult * points);
          double sl       = orderSl;
-         if (stopLossAtZigZagArrow ) sl = slZigZag;
-         if (OrderHiddenSL > 0 && slZigZag > orderSl) sl=orderSl;
-        
-        Print(_symbol," open buy trade @", DoubleToStr(price, 5), " sl:", DoubleToStr(sl, 5));
-        int ticket = _orders.OpenBuyOrder(_orders.GetLotSize(sl, OP_BUY), 0, 0);
-        if (ticket >= 0) _trailingStop.SetInitalStoploss(ticket, sl);
+         if (stopLossAtZigZagArrow)
+         {
+            sl = slZigZag;
+            if (OrderHiddenSL > 0 && slZigZag < orderSl) sl = orderSl;
+         }
+         Print(_symbol," open buy trade @", DoubleToStr(price, 5), " sl:", DoubleToStr(sl, 5));
+         int ticket = _orders.OpenBuyOrder(_orders.GetLotSize(sl, OP_BUY), 0, 0);
+         if (ticket >= 0) _trailingStop.SetInitalStoploss(ticket, sl);
       }
       else if (_signal.IsSell)
       {
@@ -407,9 +409,11 @@ public:
          double mult     = (digits == 3 || digits == 5) ? 10 : 1;
          double orderSl  = price + (OrderHiddenSL * mult * points);
          double sl       = orderSl;
-         if (stopLossAtZigZagArrow ) sl = slZigZag;
-         if (OrderHiddenSL > 0 && slZigZag < orderSl) sl=orderSl;
-         
+         if (stopLossAtZigZagArrow ) 
+         {
+            sl = slZigZag;
+            if (OrderHiddenSL > 0 && orderSl < slZigZag) sl = orderSl;
+         }
          Print(_symbol," open sell trade @", DoubleToStr(price, 5), " sl:", DoubleToStr(sl, 5));
          int ticket = _orders.OpenSellOrder(_orders.GetLotSize(sl, OP_SELL), 0, 0);
          if (ticket >= 0) _trailingStop.SetInitalStoploss(ticket, sl);
@@ -434,7 +438,7 @@ void SetStoplossOnOpenOrder()
 		    // check if order is for our symbol
             if (OrderSymbol() != _symbol) continue;
             
-			// ask strategy for the stoploss for this order
+		   	// ask strategy for the stoploss for this order
 
             double strategySL = _strategy.GetStopLossForOpenOrder();
             double points = MarketInfo(_symbol, MODE_POINT);
@@ -447,19 +451,19 @@ void SetStoplossOnOpenOrder()
                
                if (!stopLossAtZigZagArrow && orderSl > strategySL && OrderHiddenSL > 0)
                {
-				  // set stoploss to OrderHiddenSL
+				      // set stoploss to OrderHiddenSL
                   Print(_symbol, " -> order ", OrderTicket()," set SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
                else if (strategySL > 0)
                {
-				  // set stoploss to zigzag
+				      // set stoploss to zigzag
                   Print(_symbol, " -> order ", OrderTicket()," set SL to zigzag @ ", DoubleToStr(strategySL, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), strategySL);
                }
                else
                {
-				  // set stoploss to OrderHiddenSL
+				      // set stoploss to OrderHiddenSL
                   Print(_symbol, " -> order ", OrderTicket()," set SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
@@ -469,19 +473,19 @@ void SetStoplossOnOpenOrder()
                double orderSl  = OrderOpenPrice() + (OrderHiddenSL * mult * points);
                if (!stopLossAtZigZagArrow && orderSl <  strategySL && OrderHiddenSL > 0)
                {
-				  // set stoploss to OrderHiddenSL
+				      // set stoploss to OrderHiddenSL
                   Print(_symbol, " -> order ", OrderTicket()," set virtual SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
                else  if (strategySL > 0)
                {
-				  // set stoploss to zigzag
+				      // set stoploss to zigzag
                   Print(_symbol, " -> order " ,OrderTicket()," set virtual SL to zigzag @ ", DoubleToStr(strategySL, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), strategySL);
                }
                else
                {
-				  // set stoploss to OrderHiddenSL
+				      // set stoploss to OrderHiddenSL
                   Print(_symbol, " -> order ", OrderTicket()," set SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
