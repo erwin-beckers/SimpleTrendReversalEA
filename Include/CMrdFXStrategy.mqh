@@ -7,11 +7,11 @@
 #property link      "https://www.erwinbeckers.nl"
 #property strict
 
-extern string     _srfilter_                   = " ------- S&R filter ------------";
+extern string     _srfilter_                   = " ------- S&R Filter ------------";
 extern bool        UseSupportResistanceFilter  = false;
 extern int         MaxPipsFromSR               = 30;
 
-extern string     __trendfilter                = " ------- SMA 200 trendfilter ------------";
+extern string     __trendfilter                = " ------- SMA 200 Daily Trend Filter ------------";
 extern bool        UseSma200TrendFilter        = false;
 
 extern string     __signals__                  = " ------- Candles to look back for confirmation ------------";
@@ -24,11 +24,16 @@ extern int        MBFXCandles                  = 10;
 #include <CTrendLine.mqh>
 #include <CSupportResistance.mqh>
 
-extern string     __movingaverage__            = " ------- moving average settings ------------";
+extern string     __movingaverage__            = " ------- Moving Average Settings ------------";
 extern int        MovingAveragePeriod          = 15;
 extern int        MovingAverageType            = MODE_SMA;
 
 
+bool UseMBFX      = true;
+bool UseSMA15     = true;
+bool UseTrendLine = true;
+
+//--------------------------------------------------------------------
 class CMrdFXStrategy : public IStrategy
 {
 private:
@@ -52,21 +57,42 @@ public:
       _trendLine         = new CTrendLine();
       _signal            = new CSignal();
          
-      _indicatorCount = 4; // zigzag, mbfx, trendline, sma15
-      if (UseSma200TrendFilter) _indicatorCount++; //5
-      if (UseSupportResistanceFilter) _indicatorCount++; //6
+      _indicatorCount = 1; // zigzag
+      if (UseMBFX) _indicatorCount++;
+      if (UseTrendLine) _indicatorCount++;
+      if (UseSMA15) _indicatorCount++;
+      if (UseSma200TrendFilter) _indicatorCount++; 
+      if (UseSupportResistanceFilter) _indicatorCount++; 
        
-      ArrayResize(_indicators, _indicatorCount);
-      _indicators[0] = new CIndicator("ZigZag");
-      _indicators[1] = new CIndicator("MBFX");
-      _indicators[2] = new CIndicator("Trend");
-      _indicators[3] = new CIndicator("MA15");
-      int index = 4;
+      ArrayResize(_indicators, 10);
+      int index=0;
+      _indicators[index] = new CIndicator("ZigZag");
+      index++;
+      
+      if (UseMBFX)
+      {
+         _indicators[index] = new CIndicator("MBFX");
+         index++;
+      }
+      
+      if (UseTrendLine)
+      {
+         _indicators[index] = new CIndicator("Trend");
+         index++;
+      }
+      
+      if (UseSMA15) 
+      {
+         _indicators[index] = new CIndicator("MA15");
+         index++;
+      }
+      
       if (UseSma200TrendFilter)
       {
          _indicators[index] = new CIndicator("MA200");
          index++;
       }
+      
       if (UseSupportResistanceFilter) 
       {
         _indicators[index] = new CIndicator("S&R");
@@ -215,14 +241,28 @@ public:
             _signal.StopLoss = iHigh(_symbol, 0, zigZagBar);
          }
          
-         _indicators[0].IsValid = true;    // zigzag         
-         _indicators[1].IsValid = mbfxOk;  // mbfx
-         _indicators[2].IsValid = trendOk; // trend
-         _indicators[3].IsValid = sma15Ok; // ma15
-         int index = 4;
+         int index=1;
+         _indicators[0].IsValid = true;    // zigzag    
+         if (UseMBFX)
+         {
+            _indicators[index].IsValid = mbfxOk;  
+             index++;
+         }
+         if (UseTrendLine)
+         {
+            _indicators[index].IsValid = trendOk;
+            index++;
+         }
+         
+         if (UseSMA15) 
+         {
+            _indicators[index].IsValid = sma15Ok;
+            index++;
+         }
+        
          if (UseSma200TrendFilter)
          {
-            _indicators[index].IsValid = sma200ok; // ma200
+            _indicators[index].IsValid = sma200ok; 
             index++;
          }
          

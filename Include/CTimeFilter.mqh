@@ -20,10 +20,12 @@ extern bool    TradeOnThursDay   = true;
 extern bool    TradeOnFriday     = true;
 extern bool    TradeOnSunday     = true;
 
+//--------------------------------------------------------------------
 class CTimeFilter
 {
 public:
 
+   //--------------------------------------------------------------------
    bool CanTrade()
    {  
       int dayOfWeek = TimeDayOfWeek( TimeCurrent() );

@@ -14,6 +14,7 @@ extern int        Len                  = 7;
 extern double     Filter               = 0.0;
 
 
+//--------------------------------------------------------------------
 class CMBFX
 {
 private:
@@ -22,37 +23,42 @@ private:
    double            _mbfxRed[];
 
 public:
+   //--------------------------------------------------------------------
    CMBFX()
    {
-      ArrayResize(_mbfxGreen,500+5,0);
-      ArrayResize(_mbfxRed,500+5,0);
-      ArrayResize(_mbfxYellow,500+5,0);
+      ArrayResize(_mbfxGreen , 500+5, 0);
+      ArrayResize(_mbfxRed   , 500+5, 0);
+      ArrayResize(_mbfxYellow, 500+5, 0);
    }
    
+   //--------------------------------------------------------------------
    bool IsGreen(int bar)
    {
-      if (bar <0 || bar >=500) return false;
-      return (_mbfxGreen[bar] !=EMPTY_VALUE);
+      if (bar <0 || bar >= 500) return false;
+      return (_mbfxGreen[bar] != EMPTY_VALUE);
    }
    
+   //--------------------------------------------------------------------
    double GreenValue(int bar)
    {
-      if (bar <0 || bar >=500) return EMPTY_VALUE;
+      if (bar <0 || bar >= 500) return EMPTY_VALUE;
       return _mbfxGreen[bar];
    }
    
+   //--------------------------------------------------------------------
    double RedValue(int bar)
    {
-      if (bar <0 || bar >=500) return EMPTY_VALUE;
+      if (bar <0 || bar >= 500) return EMPTY_VALUE;
       return _mbfxRed[bar];
    }
    
+   //--------------------------------------------------------------------
    void Refresh(string symbol)
    {
-      ArrayInitialize(_mbfxYellow,0);
-      ArrayInitialize(_mbfxGreen,0);
-      ArrayInitialize(_mbfxRed,0);
-       double ld_0=0;
+      ArrayInitialize(_mbfxYellow, 0);
+      ArrayInitialize(_mbfxGreen, 0);
+      ArrayInitialize(_mbfxRed, 0);
+      double ld_0=0;
       double ld_8=0;
       double ld_16=0;
       double ld_24=0;
@@ -80,8 +86,10 @@ public:
       double ld_200=0;
       double ld_208=0;
       int barLimit = 500 - Len - 1;
-      for (int bar = barLimit; bar >= 0; bar--) {
-         if (ld_8 == 0.0) {
+      for (int bar = barLimit; bar >= 0; bar--) 
+      {
+         if (ld_8 == 0.0) 
+         {
             ld_8 = 1.0;
             ld_16 = 0.0;
             if (Len - 1 >= 5) ld_0 = Len - 1.0;
@@ -89,7 +97,9 @@ public:
             ld_80 = 100.0 * ((iHigh(symbol, 0, bar) + iLow(symbol, 0, bar) + iClose(symbol, 0, bar)) / 3.0);
             ld_96 = 3.0 / (Len + 2.0);
             ld_104 = 1.0 - ld_96;
-         } else {
+         } 
+         else 
+         {
             if (ld_0 <= ld_8) ld_8 = ld_0 + 1.0;
             else ld_8 += 1.0;
             ld_88 = ld_80;
@@ -116,19 +126,25 @@ public:
             if (ld_0 >= ld_8 && ld_80 != ld_88) ld_16 = 1.0;
             if (ld_0 == ld_8 && ld_16 == 0.0) ld_8 = 0.0;
          }
-         if (ld_0 < ld_8 && ld_72 > 0.0000000001) {
+         if (ld_0 < ld_8 && ld_72 > 0.0000000001) 
+         {
             ld_24 = 50.0 * (ld_56 / ld_72 + 1.0);
             if (ld_24 > 100.0) ld_24 = 100.0;
             if (ld_24 < 0.0) ld_24 = 0.0;
-         } else ld_24 = 50.0;
+         } 
+         else ld_24 = 50.0;
+         
          _mbfxYellow[bar] = ld_24;
-         _mbfxGreen[bar] = ld_24;
-         _mbfxRed[bar] = ld_24;
+         _mbfxGreen[bar]  = ld_24;
+         _mbfxRed[bar]    = ld_24;
          if (_mbfxYellow[bar] > _mbfxYellow[bar + 1] - Filter) _mbfxRed[bar] = EMPTY_VALUE;
-         else {
+         else 
+         {
             if (_mbfxYellow[bar] < _mbfxYellow[bar + 1] + Filter) _mbfxGreen[bar] = EMPTY_VALUE;
-            else {
-               if (_mbfxYellow[bar] == _mbfxYellow[bar + 1] + Filter) {
+            else 
+            {
+               if (_mbfxYellow[bar] == _mbfxYellow[bar + 1] + Filter) 
+               {
                   _mbfxGreen[bar] = EMPTY_VALUE;
                   _mbfxRed[bar] = EMPTY_VALUE;
                }
