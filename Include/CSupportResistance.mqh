@@ -21,6 +21,7 @@ extern int         BarsHistory     = 3000;
 extern Details     SR_Detail       = Medium;
 
 #include <CZigZag.mqh>
+#include <CSelectionSort.mqh>
 
 //+------------------------------------------------------------------+
 class SRLine
@@ -35,6 +36,17 @@ public:
    int      Timeframe;
 };
 
+//+------------------------------------------------------------------+
+class SRLevelComparer: public ICompare<SRLine*>
+{
+public:
+   int Compare(SRLine* el1, SRLine* el2)
+   {
+      if (  el1.Price < el2.Price) return -1;
+      if (  el1.Price > el2.Price) return 1;
+      return 0;
+   }
+};
 
 //+------------------------------------------------------------------+
 class CSupportResistance
@@ -388,7 +400,7 @@ private:
     
 public: 
    //+------------------------------------------------------------------+
-   void Draw( string key, color colorText, color &colors[], bool showAgeLabels, bool showLastTouch)
+   void Draw( string key, color colorText, color &colors[], bool showAgeLabels, bool showLastTouch, bool showAllSRLines)
    {
       ClearAll(key);
       
@@ -403,9 +415,27 @@ public:
           maxBars    = MathMax(maxBars, MathAbs(_lines[i].EndBar - _lines[i].StartBar));
       }
       
-      for (int i=0; i < _maxLine;++i)
+      if (!showAllSRLines)
       {
-          DrawLine(lineCnt, _lines[i], maxTouches, maxBars, key, colorText,colors,  showAgeLabels,  showLastTouch);
+         double marketPrice = MarketInfo(_symbol, MODE_BID); 
+         for (int i=0; i < _maxLine; ++i)
+         {
+            if ( _lines[i].Price > marketPrice)
+            {
+               if (i-2 >= 0) DrawLine(lineCnt, _lines[i-2], maxTouches, maxBars, key, colorText,colors,  showAgeLabels,  showLastTouch);
+               if (i-1 >= 0) DrawLine(lineCnt, _lines[i-1], maxTouches, maxBars, key, colorText,colors,  showAgeLabels,  showLastTouch);
+               DrawLine(lineCnt, _lines[i], maxTouches, maxBars, key, colorText,colors,  showAgeLabels,  showLastTouch);
+               if (i+1 < _maxLine) DrawLine(lineCnt, _lines[i+1], maxTouches, maxBars, key, colorText,colors,  showAgeLabels,  showLastTouch);
+               break;
+            }
+         }
+      }
+      else
+      {
+         for (int i=0; i < _maxLine;++i)
+         {
+             DrawLine(lineCnt, _lines[i], maxTouches, maxBars, key, colorText,colors,  showAgeLabels,  showLastTouch);
+         }
       }
    }  
    
@@ -439,6 +469,12 @@ public:
          _maxLine = 0;
          _maxDistance = 0;
          Refresh( );
+         
+         CSelectionSort<SRLine*>* sorter = new CSelectionSort<SRLine*> ();
+         SRLevelComparer* comparer = new SRLevelComparer();
+         sorter.Sort(_lines, _maxLine, comparer);
+         delete sorter;
+         delete comparer;
       }
    }
    
