@@ -10,6 +10,10 @@
 extern string     _srfilter_                   = " ------- S&R Filter ------------";
 extern bool        UseSupportResistanceFilter  = false;
 extern int         MaxPipsFromSR               = 30;
+extern bool        SR_1Hours                   = false;
+extern bool        SR_4Hours                   = false;
+extern bool        SR_Daily                    = true;
+extern bool        SR_Weekly                   = true;
 
 extern string     __trendfilter                = " ------- SMA 200 Daily Trend Filter ------------";
 extern bool        UseSma200TrendFilter        = false;
@@ -37,7 +41,10 @@ bool UseTrendLine = true;
 class CMrdFXStrategy : public IStrategy
 {
 private:
-   CSupportResistance* _supportResistance;
+   CSupportResistance* _supportResistanceH1;
+   CSupportResistance* _supportResistanceH4;
+   CSupportResistance* _supportResistanceD1;
+   CSupportResistance* _supportResistanceW1;
    CZigZag*            _zigZag;         
    CMBFX*              _mbfx;         
    CTrendLine*         _trendLine; 
@@ -50,12 +57,15 @@ public:
    //--------------------------------------------------------------------
    CMrdFXStrategy(string symbol)
    {
-      _symbol            = symbol;
-      _supportResistance = new CSupportResistance(_symbol);
-      _zigZag            = new CZigZag();
-      _mbfx              = new CMBFX();
-      _trendLine         = new CTrendLine();
-      _signal            = new CSignal();
+      _symbol              = symbol;
+      _supportResistanceH1 = new CSupportResistance(_symbol, PERIOD_H1);
+      _supportResistanceH4 = new CSupportResistance(_symbol, PERIOD_H4);
+      _supportResistanceD1 = new CSupportResistance(_symbol, PERIOD_D1);
+      _supportResistanceW1 = new CSupportResistance(_symbol, PERIOD_W1);
+      _zigZag              = new CZigZag();
+      _mbfx                = new CMBFX();
+      _trendLine           = new CTrendLine();
+      _signal              = new CSignal();
          
       _indicatorCount = 1; // zigzag
       if (UseMBFX) _indicatorCount++;
@@ -107,7 +117,10 @@ public:
       delete _mbfx;
       delete _trendLine;
       delete _signal;
-      delete _supportResistance;
+      delete _supportResistanceH1;
+      delete _supportResistanceH4;
+      delete _supportResistanceD1;
+      delete _supportResistanceW1;
       
       for (int i=0; i < _indicatorCount;++i)
       {
@@ -268,7 +281,12 @@ public:
          
          if (UseSupportResistanceFilter)
          {
-           _indicators[index].IsValid = _supportResistance.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
+            bool srValid=false;
+            if (SR_1Hours) srValid |= _supportResistanceH1.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
+            if (SR_4Hours) srValid |= _supportResistanceH4.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
+            if (SR_Daily)  srValid |= _supportResistanceD1.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
+            if (SR_Weekly) srValid |= _supportResistanceW1.IsAtSupportResistance(_signal.StopLoss, MaxPipsFromSR);
+           _indicators[index].IsValid = srValid;
            index++;
          }
       }
