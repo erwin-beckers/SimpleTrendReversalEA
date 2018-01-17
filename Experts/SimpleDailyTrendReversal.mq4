@@ -5,10 +5,10 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2017, Erwin Beckers"
 #property link      "www.erwinbeckers.nl"
-#property version   "1.18.4"
+#property version   "1.19"
 #property strict
 
-string version = "1.18.4";
+string version = "1.19";
 
 #include <CPair.mqh>
 #include <CTrailingStop.mqh>
