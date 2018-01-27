@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                     SimpleDailyTrendReversal.mq4 |
+//|                                                Pinbar trader.mq4 |
 //|                                    Copyright 2017, Erwin Beckers |
 //|                                              www.erwinbeckers.nl |
 //+------------------------------------------------------------------+
@@ -9,15 +9,16 @@
 #property strict
 
 string version = "1.19";
+
 extern string      __chartTemplate              = " ------- Chart template ------------";
-extern string      ChartTemplate                = "Trend Reversal Strategy PC.tpl";
+extern string      ChartTemplate                = "pinbartrader.tpl";
 
 #include <CPair.mqh>
 #include <CTrailingStop.mqh>
 #include <CGui.mqh>
 #include <CInfoPanel.mqh>
 #include <CTradesStats.mqh>
-#include <CMrdFxStrategy.mqh>
+#include <CPriceActionStrategy.mqh>
 
 
 CNewsFilter*     _newsFilter;  
@@ -108,7 +109,7 @@ void SetupPanel()
    _labelTotalLotsTraded    = new CLabelKeyValue("Total lots traded",150);
    _labelAverageLotsPerTrade= new CLabelKeyValue("Average lots/trade",150);
 
-   _labelTitle.Text="--- Trend Reversal EA v"+version+" --- ";
+   _labelTitle.Text="--- Pinbar trader EA v"+version+" --- ";
    _labelTitle.FontSize = 10;   
    _line1.X = 0;
    _line1.Width = 380;
@@ -389,7 +390,7 @@ void UpdateTradeHistoryPanel()
 //--------------------------------------------------------------------
 int OnInit()
 {
-   Print("--- Simple Daily Trend Reversal ",version," --- ");
+   Print("--- Pinbar trader ",version," --- ");
    
    ObjectsDeleteAll();
    Clear();
@@ -404,7 +405,7 @@ int OnInit()
    
    if (IsTesting() || IsOptimization())
    {
-      _pairs[0]  = new CPair(Symbol(), new CMrdFXStrategy(Symbol()), _newsFilter, _utils);
+      _pairs[0]  = new CPair(Symbol(), new CPriceActionStrategy(Symbol()), _newsFilter, _utils);
       _pairCount = 1;
    }
    else
@@ -418,7 +419,7 @@ int OnInit()
          {
             if (StringFind(symbol, pairs[x]) >= 0 )
             {
-               _pairs[_pairCount] = new CPair(symbol, new CMrdFXStrategy(symbol), _newsFilter, _utils);
+               _pairs[_pairCount] = new CPair(symbol, new CPriceActionStrategy(symbol), _newsFilter, _utils);
                _pairCount++;
                break;
             }
@@ -444,7 +445,7 @@ int OnInit()
 //--------------------------------------------------------------------
 void OnDeinit(const int reason)
 {
-   Print("--- Simple Daily Trend Reversal deinit---");
+   Print("--- Pinbar trader deinit---");
    delete _utils;
    delete _tradeStats;
    delete _newsFilter;

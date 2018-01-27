@@ -9,8 +9,6 @@ extern int         minsBetween2TradesOnSamePair = 30;
 extern bool        AllowReEntriesOnSamePair     = false;
 extern string      TradePairs                   = "EURUSD USDJPY GBPUSD USDCHF USDCAD AUDUSD NZDUSD EURCHF EURGBP EURCAD EURAUD EURNZD EURJPY GBPJPY CHFJPY CADJPY AUDJPY NZDJPY GBPCHF GBPAUD GBPCAD GBPNZD AUDCHF AUDCAD AUDNZD CADCHF NZDCHF NZDCAD";
 
-extern string      __chartTemplate              = " ------- Chart template ------------";
-extern string      ChartTemplate                = "Trend Reversal Strategy PC.tpl";
 
 #include <COrders.mqh>
 #include <CTrailingStop.mqh>
