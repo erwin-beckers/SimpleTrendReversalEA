@@ -8,8 +8,8 @@
 #property strict
 
 
-extern string     __trendfilter                = " ------- SMA 200 Daily Trend Filter ------------";
-extern bool        UseSma200TrendFilter        = false;
+extern string     __trendfilter                  = " ------- Pinbar settings ------------";
+extern bool        Use50PercentRetracementEntrty = false;
 
 #include <CStrategy.mqh>
 #include <CSupportResistance.mqh>
@@ -33,11 +33,16 @@ public:
       _signal              = new CSignal();
          
       _indicatorCount = 2; // S&R and pinbar
+      if (Use50PercentRetracementEntrty) _indicatorCount++;
        
       ArrayResize(_indicators, 10);
       int index=0;
       _indicators[index++] = new CIndicator("S&R");
       _indicators[index++] = new CIndicator("Pinbar");
+      if (Use50PercentRetracementEntrty) 
+      {
+         _indicators[index++] = new CIndicator("50%rt");
+      }
    }
    
    //--------------------------------------------------------------------
@@ -79,6 +84,7 @@ public:
       if (priceClose < priceOpen)
       {
          // red candle
+         // do we have a pinbar ?
          bool isPinBar = false;
          if (wickHi >= 2 * body)  
          {
@@ -92,6 +98,8 @@ public:
          pips /= points;
       
         _indicators[1].IsValid = isPinBar;
+        
+         // and is it at a weekly S/R level ?
         _indicators[0].IsValid = _supportResistanceW1.IsAtSupportResistance(priceHi, pips);
         _signal.IsSell=true;
         _signal.StopLoss = priceHi;
@@ -99,6 +107,8 @@ public:
       else if (priceClose > priceOpen )
       {
          // green candle
+         
+         // do we have a pinbar ?
          bool isPinBar = false;
          if (wickLo >= 2 * body)  
          {
@@ -107,17 +117,46 @@ public:
                isPinBar=true;
             }
          }
-         
       
          double pips= MathAbs(priceLow - bodyLo);
          pips /= mult;
          pips /= points;
         _indicators[1].IsValid = isPinBar;
+        
+         // and is it at a weekly S/R level ?
         _indicators[0].IsValid = _supportResistanceW1.IsAtSupportResistance(priceLow, pips);
         _signal.IsBuy=true;
         _signal.StopLoss = priceLow;
       }
-      if (! _indicators[1].IsValid && !  _indicators[0].IsValid)
+      
+      // check if price is now at a 50% retracement of the pinbar
+      if (Use50PercentRetracementEntrty) 
+      {
+         double priceNow    = MarketInfo(_symbol, MODE_BID); 
+         double pinBarHi    = iHigh(_symbol, 0, 1);
+         double pinBarLo    = iLow (_symbol, 0, 1);
+         double pinbarRange = pinBarHi - pinBarLo ;
+         double priceRetracement = pinBarLo + (pinbarRange * 0.5);
+         
+         if (_signal.IsBuy)
+         {
+            if ( priceNow <= priceRetracement )
+            {
+                _indicators[2].IsValid = true;
+            }
+         }
+         
+         if (_signal.IsSell)
+         {
+            if ( priceNow >= priceRetracement )
+            {
+                _indicators[2].IsValid = true;
+            }
+         }
+      }
+      
+      
+      if (!_indicators[0].IsValid && !_indicators[1].IsValid)
       {
          _signal.IsBuy=false;
          _signal.IsSell=false;

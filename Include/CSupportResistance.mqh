@@ -73,6 +73,10 @@ public:
    //+------------------------------------------------------------------+
    ~CSupportResistance()
    {
+      for (int i=0; i < _maxLine; ++i)
+      {
+         delete _lines[i];
+      }
       ArrayFree(_lines);
    }
    
