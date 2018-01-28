@@ -9,7 +9,7 @@
 
 
 extern string     __trendfilter                  = " ------- Pinbar settings ------------";
-extern bool        Use50PercentRetracementEntrty = true;
+extern bool        Use50PercentRetracementEntry = true;
 
 #include <CStrategy.mqh>
 #include <CSupportResistance.mqh>
@@ -29,19 +29,16 @@ public:
    CPriceActionStrategy(string symbol)
    {
       _symbol              = symbol;
-      _supportResistanceW1 = new CSupportResistance(_symbol, PERIOD_W1);
       _signal              = new CSignal();
+      _supportResistanceW1 = new CSupportResistance(_symbol, PERIOD_W1);
          
-      _indicatorCount = 2; // S&R and pinbar
-      if (Use50PercentRetracementEntrty) _indicatorCount++;
-       
       ArrayResize(_indicators, 10);
-      int index=0;
-      _indicators[index++] = new CIndicator("S&R");
-      _indicators[index++] = new CIndicator("Pinbar");
-      if (Use50PercentRetracementEntrty) 
+      _indicatorCount = 0; 
+      _indicators[_indicatorCount++] = new CIndicator("S&R");
+      _indicators[_indicatorCount++] = new CIndicator("Pinbar");
+      if (Use50PercentRetracementEntry) 
       {
-         _indicators[index++] = new CIndicator("50%rt");
+         _indicators[_indicatorCount++] = new CIndicator("50%rt");
       }
    }
    
@@ -61,10 +58,10 @@ public:
    //--------------------------------------------------------------------
    CSignal* Refresh()
    {
-      double priceOpen = iOpen(_symbol,0,1);
-      double priceClose= iClose(_symbol,0,1);
-      double priceHi   = iHigh(_symbol,0,1);
-      double priceLow  = iLow(_symbol,0,1);
+      double priceOpen  = iOpen (_symbol,0,1);
+      double priceClose = iClose(_symbol,0,1);
+      double priceHi    = iHigh (_symbol,0,1);
+      double priceLow   = iLow  (_symbol,0,1);
       
       double bodyLo = MathMin(priceOpen, priceClose);
       double bodyHi = MathMax(priceOpen, priceClose);
@@ -78,9 +75,12 @@ public:
       if (digits ==3 || digits==5) mult = 10;
             
       _signal.Reset();
-     _indicators[0].IsValid = false;
-     _indicators[1].IsValid = false;
-     
+      
+      for (int i=0; i < _indicatorCount;++i)
+      {
+         _indicators[i].IsValid = false;
+      }
+      
       if (priceClose < priceOpen)
       {
          // red candle
@@ -88,12 +88,12 @@ public:
          bool isPinBar = false;
          if (wickHi >= 2 * body)  
          {
-            if (wickHi > 2 * wickLo)
+            if (wickHi >= 2 * wickLo)
             {
-               isPinBar=true;
+               isPinBar = true;
             }
          }
-         double pips= MathAbs(priceHi - bodyHi);
+         double pips = MathAbs(priceHi - bodyHi);
          pips /= mult;
          pips /= points;
       
@@ -101,7 +101,7 @@ public:
         
          // and is it at a weekly S/R level ?
         _indicators[0].IsValid = _supportResistanceW1.IsAtSupportResistance(priceHi, pips);
-        _signal.IsSell=true;
+        _signal.IsSell   = true;
         _signal.StopLoss = priceHi;
       }
       else if (priceClose > priceOpen )
@@ -112,7 +112,7 @@ public:
          bool isPinBar = false;
          if (wickLo >= 2 * body)  
          {
-            if (wickLo > 2 * wickHi )
+            if (wickLo >= 2 * wickHi )
             {
                isPinBar=true;
             }
@@ -125,12 +125,12 @@ public:
         
          // and is it at a weekly S/R level ?
         _indicators[0].IsValid = _supportResistanceW1.IsAtSupportResistance(priceLow, pips);
-        _signal.IsBuy=true;
+        _signal.IsBuy    = true;
         _signal.StopLoss = priceLow;
       }
       
       // check if price is now at a 50% retracement of the pinbar
-      if (Use50PercentRetracementEntrty) 
+      if (Use50PercentRetracementEntry) 
       {
          double priceNow    = MarketInfo(_symbol, MODE_BID); 
          double pinBarHi    = iHigh(_symbol, 0, 1);
@@ -155,11 +155,10 @@ public:
          }
       }
       
-      
       if (!_indicators[0].IsValid && !_indicators[1].IsValid)
       {
-         _signal.IsBuy=false;
-         _signal.IsSell=false;
+         _signal.IsBuy  = false;
+         _signal.IsSell = false;
       }
       return _signal;
    }

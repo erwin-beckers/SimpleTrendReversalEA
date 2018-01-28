@@ -469,6 +469,10 @@ public:
       int day = TimeDayOfYear(TimeCurrent());
       if (day != _previousDay || forceRefresh) 
       {
+         for (int i=0; i < _maxLine; ++i)
+         {
+            delete _lines[i];
+         }
          _previousDay = day;
          _maxLine = 0;
          _maxDistance = 0;
