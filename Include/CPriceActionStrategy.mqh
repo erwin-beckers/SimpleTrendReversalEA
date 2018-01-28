@@ -9,7 +9,7 @@
 
 
 extern string     __trendfilter                  = " ------- Pinbar settings ------------";
-extern bool        Use50PercentRetracementEntrty = false;
+extern bool        Use50PercentRetracementEntrty = true;
 
 #include <CStrategy.mqh>
 #include <CSupportResistance.mqh>

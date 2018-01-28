@@ -5,10 +5,10 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2017, Erwin Beckers"
 #property link      "www.erwinbeckers.nl"
-#property version   "1.19"
+#property version   "1.20"
 #property strict
 
-string version = "1.19";
+string version = "1.20";
 
 extern string      __chartTemplate              = " ------- Chart template ------------";
 extern string      ChartTemplate                = "pinbartrader.tpl";
@@ -392,6 +392,13 @@ int OnInit()
 {
    Print("--- Pinbar trader ",version," --- ");
    
+   ChartSetInteger( ChartID(), CHART_COLOR_BACKGROUND,  clrBlack);
+   ChartSetInteger( ChartID(), CHART_COLOR_FOREGROUND,  clrWhite);
+   ChartSetInteger( ChartID(), CHART_COLOR_GRID,        clrNONE);
+   ChartSetInteger( ChartID(), CHART_COLOR_CHART_DOWN,  clrNONE);
+   ChartSetInteger( ChartID(), CHART_COLOR_CHART_UP,    clrNONE);
+   ChartSetInteger( ChartID(), CHART_COLOR_CANDLE_BEAR, clrNONE);
+   ChartSetInteger( ChartID(), CHART_COLOR_CANDLE_BULL, clrNONE);
    ObjectsDeleteAll();
    Clear();
    _tradeStats   = new CTradeStats(MagicNumberBuy, MagicNumberSell);
