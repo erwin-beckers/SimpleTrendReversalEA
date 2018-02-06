@@ -82,15 +82,40 @@ public:
    
 private:
    //+------------------------------------------------------------------+
-   bool DoesSRLevelExists(double price, double pips )
+   bool DoesSupportLevelExists(double price, double priceRange, double& srLevelFound, bool checkAbove)
    { 
       if (_maxLine <= 0) return false;
+      
       for (int i=0; i < _maxLine;++i)
       {
-         double diff = MathAbs(price - _lines[i].Price);
-         if (diff <= pips) 
+         if (!checkAbove || price >= _lines[i].Price)
          {
-            return true;
+            double diff = MathAbs(price - _lines[i].Price);
+            if (diff <= priceRange) 
+            {
+               srLevelFound = _lines[i].Price;
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+   
+   //+------------------------------------------------------------------+
+   bool DoesResistanceLevelExists(double price, double priceRange, double& srLevelFound, bool checkBelow)
+   { 
+      if (_maxLine <= 0) return false;
+      
+      for (int i=0; i < _maxLine;++i)
+      {
+         if (!checkBelow || price <= _lines[i].Price)
+         {
+            double diff = MathAbs(price - _lines[i].Price);
+            if (diff <= priceRange) 
+            {
+               srLevelFound = _lines[i].Price;
+               return true;
+            }
          }
       }
       return false;
@@ -487,16 +512,27 @@ public:
    }
    
    //+------------------------------------------------------------------+
-   bool IsAtSupportResistance(double price, double pips)
+   bool IsAtSupport(double price, double pips, double& srLevelFound, bool checkAbove=true)
    {
       Calculate();
       double points   = MarketInfo(_symbol, MODE_POINT);
       double digits   = MarketInfo(_symbol, MODE_DIGITS);
       double mult     = (digits==3 || digits==5) ? 10.0:1;
-      pips = pips * mult * points;
-      
-      if (DoesSRLevelExists(price, pips)) return true;
+      double priceRange = pips * mult * points;
+      if (DoesSupportLevelExists(price, priceRange, srLevelFound, checkAbove)) return true;
       return false;
    }
    
+   //+------------------------------------------------------------------+
+   bool IsAtResistance(double price, double pips, double& srLevelFound, bool checkBelow=true)
+   {
+      Calculate();
+      double points   = MarketInfo(_symbol, MODE_POINT);
+      double digits   = MarketInfo(_symbol, MODE_DIGITS);
+      double mult     = (digits==3 || digits==5) ? 10.0:1;
+      double priceRange = pips * mult * points;
+      
+      if (DoesResistanceLevelExists(price, priceRange, srLevelFound,checkBelow)) return true;
+      return false;
+   }
 };

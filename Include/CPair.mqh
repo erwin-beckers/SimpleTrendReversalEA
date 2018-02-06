@@ -410,7 +410,7 @@ public:
          if (stopLossAtZigZagArrow ) 
          {
             sl = slZigZag;
-            if (OrderHiddenSL > 0 && orderSl < slZigZag) sl = orderSl;
+            if (OrderHiddenSL > 0 && slZigZag > orderSl) sl = orderSl;
          }
          Print(_symbol," open sell trade @", DoubleToStr(price, 5), " sl:", DoubleToStr(sl, 5));
          int ticket = _orders.OpenSellOrder(_orders.GetLotSize(sl, OP_SELL), 0, 0);
@@ -447,13 +447,13 @@ void SetStoplossOnOpenOrder()
             {
                double orderSl  = OrderOpenPrice() - (OrderHiddenSL * mult * points);
                
-               if (!stopLossAtZigZagArrow && orderSl > strategySL && OrderHiddenSL > 0)
+               if (stopLossAtZigZagArrow  && OrderHiddenSL > 0 && strategySL < orderSl)
                {
 				      // set stoploss to OrderHiddenSL
                   Print(_symbol, " -> order ", OrderTicket()," set SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
-               else if (strategySL > 0)
+               else if (stopLossAtZigZagArrow && strategySL > 0)
                {
 				      // set stoploss to zigzag
                   Print(_symbol, " -> order ", OrderTicket()," set SL to zigzag @ ", DoubleToStr(strategySL, 5));
@@ -469,13 +469,13 @@ void SetStoplossOnOpenOrder()
             else  if (OrderType() == OP_SELL)
             {
                double orderSl  = OrderOpenPrice() + (OrderHiddenSL * mult * points);
-               if (!stopLossAtZigZagArrow && orderSl <  strategySL && OrderHiddenSL > 0)
+               if (stopLossAtZigZagArrow && OrderHiddenSL > 0 && strategySL > orderSl)
                {
 				      // set stoploss to OrderHiddenSL
                   Print(_symbol, " -> order ", OrderTicket()," set virtual SL to @ ", DoubleToStr(orderSl, 5));
                   _trailingStop.SetInitalStoploss(OrderTicket(), orderSl);
                }
-               else  if (strategySL > 0)
+               else if (stopLossAtZigZagArrow && strategySL > 0)
                {
 				      // set stoploss to zigzag
                   Print(_symbol, " -> order " ,OrderTicket()," set virtual SL to zigzag @ ", DoubleToStr(strategySL, 5));
