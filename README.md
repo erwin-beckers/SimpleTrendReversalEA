@@ -29,6 +29,9 @@ NEO: ANQxQxFd4z5c7P3W1azK7zxvzRNY4dwbJg
 
 # Version history:
 
+1.21
+- small bugfix
+
 1.18.4
 - added (optional) S&R filter where EA will only open trades which are appearing at S&R levels
 

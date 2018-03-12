@@ -170,9 +170,9 @@ public:
       _maxEvents=0;
       
    	int      BoEvent = 0;
-      int      end=0;
-      string 	sTags[7] = { "<title>", "<country>", "<date>", "<time>", "<impact>", "<forecast>", "<previous>" };
-      string 	eTags[7] = { "</title>", "</country>", "</date>", "</time>", "</impact>", "</forecast>", "</previous>" };
+    int      end=0;
+    string 	sTags[7] = { "<title>", "<country>", "<date>", "<time>", "<impact>", "<forecast>", "<previous>" };
+    string 	eTags[7] = { "</title>", "</country>", "</date>", "</time>", "</impact>", "</forecast>", "</previous>" };
    	while (true)
    	{
    		BoEvent = StringFind(news, "<event>", BoEvent);
@@ -185,11 +185,11 @@ public:
    		string myEvent = StringSubstr(news, BoEvent, next - BoEvent);
    		BoEvent = next;
    		
-   		string data[7];
+   		string newsData[7];
    		int  begin = 0;
    		for (int i=0; i < 7; i++)
    		{
-   		   data[i] = "";
+   		   newsData[i] = "";
    			next = StringFind(myEvent, sTags[i], begin);
    			
    			// Within this event, if tag not found, then it must be missing; skip it
@@ -202,10 +202,10 @@ public:
    				if (end > begin && end != -1)
    				{
    					// Get data between start and end tag
-   					data[i]= StringSubstr(myEvent, begin, end - begin);
-   					if (StringSubstr(data[i],0,9)=="<![CDATA[")
+   					newsData[i]= StringSubstr(myEvent, begin, end - begin);
+   					if (StringSubstr(newsData[i],0,9)=="<![CDATA[")
    				   {
-   					   data[i]=StringSubstr(data[i],9,StringLen(data[i])-12);
+   					   newsData[i]=StringSubstr(newsData[i],9,StringLen(newsData[i])-12);
    				   }
    				}
    			}
@@ -213,29 +213,29 @@ public:
    		
    		bool impactOk=false;
    		NEWS_IMPACT impact = IMPACT_NONE;
-   		if (IncludeHigh && StringFind(data[4], "High") >= 0) 
+   		if (IncludeHigh && StringFind(newsData[4], "High") >= 0) 
    		{
    		   impact = IMPACT_HIGH;
    		}
-   		else if (IncludeMedium && StringFind(data[4], "Medium")  >=0)
+   		else if (IncludeMedium && StringFind(newsData[4], "Medium")  >=0)
    		{
    		   impact = IMPACT_MEDIUM;
    		}
-   		else if (IncludeLow && StringFind(data[4],"Low") >=0)
+   		else if (IncludeLow && StringFind(newsData[4],"Low") >=0)
    		{
    		   impact = IMPACT_LOW;
    		}
    		
    		if (impact != IMPACT_NONE)
    		{
-   		   datetime dateTime = StrToTime(MakeDateTime(data[2], data[3]));
+   		   datetime dateTime = StrToTime(MakeDateTime(newsData[2], newsData[3]));
    		   double mins =(double)( TimeGMTFIX() - dateTime);
    		   mins /= 60.0;
    		   if ( mins <= MinsAfterNews)
    		   {
       		   CNewsEvent* event = new CNewsEvent();
-         		event.Title    = data[0];
-         		event.Country  = data[1];
+         		event.Title    = newsData[0];
+         		event.Country  = newsData[1];
          		event.DateTime = dateTime;
          		event.Impact   = impact;
          		

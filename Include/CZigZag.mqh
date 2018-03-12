@@ -178,11 +178,11 @@ public:
    }
    
    //--------------------------------------------------------------------
-   ARROW_TYPE GetArrow(int bar)
+   ARROW_TYPE GetArrow(int zigZagBar)
    {
-      if (bar < 0 || bar >= _maxBars) return ARROW_NONE;
-      if ( _zigZagBufferBuy[bar]  !=0 ) return ARROW_BUY;
-      if ( _zigZagBufferSell[bar] !=0 ) return ARROW_SELL;
+      if (zigZagBar < 0 || zigZagBar >= _maxBars) return ARROW_NONE;
+      if ( _zigZagBufferBuy[zigZagBar]  !=0 ) return ARROW_BUY;
+      if ( _zigZagBufferSell[zigZagBar] !=0 ) return ARROW_SELL;
       return ARROW_NONE;
    }
 };

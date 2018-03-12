@@ -22,7 +22,7 @@ public:
    datetime      OpenTime;
    datetime      CloseTime;
    
-   COrder(int ticket, double openPrice, double closePrice, double profit, datetime openTime, datetime closeTime, bool isBuy)
+   COrder(int ticket, double openPrice, double closePrice, double profit, datetime openTime, datetime closeTime, bool isBuyOrder)
    {
       Ticket     = ticket; 
       OpenPrice  = openPrice;
@@ -30,8 +30,8 @@ public:
       Profit     = profit;
       OpenTime   = openTime;
       CloseTime  = closeTime;
-      IsBuy      = IsBuy;
-      IsSell     = !isBuy;
+      IsBuy      = isBuyOrder;
+      IsSell     = !isBuyOrder;
    }
    
    ~COrder()

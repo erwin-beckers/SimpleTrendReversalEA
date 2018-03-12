@@ -535,4 +535,29 @@ public:
       if (DoesResistanceLevelExists(price, priceRange, srLevelFound,checkBelow)) return true;
       return false;
    }
+   
+   
+   //+------------------------------------------------------------------+
+   bool GetSupportResistance(double price, double &supportLevel, double &resistanceLevel)
+   {
+      supportLevel = 0;
+      resistanceLevel=0;
+      
+      Calculate();
+      if (_maxLine <= 0) return false;
+      
+      for (int i=0; i < _maxLine;++i)
+      {
+         if ( price > _lines[i].Price)
+         {
+            supportLevel = _lines[i].Price;
+         }
+         else if (price < _lines[i].Price)
+         {
+            resistanceLevel = _lines[i].Price;
+            return true;
+         }
+      }
+      return false;
+   }
 };
