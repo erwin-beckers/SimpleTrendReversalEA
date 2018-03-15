@@ -129,6 +129,7 @@ private:
       double totalCnt   = 1.0; 
       double lowest     = price;
       double highest    = price; 
+      double points       = MarketInfo(_symbol, MODE_POINT);
       
       for (int bar = barPrice + 1; bar < maxBars; bar++)
       {  
@@ -148,7 +149,7 @@ private:
             totalPrice += lo;
             totalCnt   += 1.0;
             lowest      = MathMin(lowest,lo);
-            double pips = diffLo / (10.0 * Point());
+            double pips = diffLo / (10.0 * points);
             //if (logEnable) Print("price:",price," bar:",bar, " low:",lo, " date:", startTime, " pips:",pips);
          }
          else if ( diffHi <= _maxDistance) 
@@ -159,7 +160,7 @@ private:
             totalPrice += hi;
             totalCnt   += 1.0;
             highest    = MathMax(highest,hi);
-            double pips=diffHi / (10.0 * Point());
+            double pips=diffHi / (10.0 * points);
             //if (logEnable) Print("price:",price," bar:",bar, " hi:",hi,"  date:",startTime, " pips:",pips);
          }
       }
@@ -204,11 +205,13 @@ private:
       int highestBar      = iHighest(_symbol, _period, MODE_HIGH, bars, 0);
       double highestPrice = iHigh(_symbol, _period, highestBar);
       double lowestPrice  = iLow(_symbol , _period, lowestBar);
+      double digits       = MarketInfo(_symbol, MODE_DIGITS);
+      double points       = MarketInfo(_symbol, MODE_POINT);
       
       double priceRange = highestPrice - lowestPrice;
      
-      double mult   = (Digits==3 || Digits==5) ? 10.0 : 1.0;
-      mult *= Point();
+      double mult   = (digits==3 || digits==5) ? 10.0 : 1.0;
+      mult *= points;
        
       double div = 30.0;
       switch (SR_Detail)
@@ -540,8 +543,8 @@ public:
    //+------------------------------------------------------------------+
    bool GetSupportResistance(double price, double &supportLevel, double &resistanceLevel)
    {
-      supportLevel = 0;
-      resistanceLevel=0;
+      supportLevel    = 0;
+      resistanceLevel = 0;
       
       Calculate();
       if (_maxLine <= 0) return false;

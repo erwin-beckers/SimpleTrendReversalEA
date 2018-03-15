@@ -13,10 +13,10 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2017, Erwin Beckers"
 #property link      "www.erwinbeckers.nl"
-#property version   "1.21"
+#property version   "1.22"
 #property strict
 
-string version = "1.21";
+string version = "1.22";
 extern string      __chartTemplate              = " ------- Chart template ------------";
 extern string      ChartTemplate                = "Trend Reversal Strategy PC.tpl";
 
