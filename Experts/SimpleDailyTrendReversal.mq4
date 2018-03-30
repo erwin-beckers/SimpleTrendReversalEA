@@ -11,12 +11,12 @@
 // ETH: 0xfa77e81d94b39b49f4b3dc7880c68ad57e6e7163
 // NEO: ANQxQxFd4z5c7P3W1azK7zxvzRNY4dwbJg
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2017, Erwin Beckers"
+#property copyright "Copyright 2017-2018, Erwin Beckers"
 #property link      "www.erwinbeckers.nl"
-#property version   "1.22"
+#property version   "1.23"
 #property strict
 
-string version = "1.22";
+string version = "1.23";
 extern string      __chartTemplate              = " ------- Chart template ------------";
 extern string      ChartTemplate                = "Trend Reversal Strategy PC.tpl";
 

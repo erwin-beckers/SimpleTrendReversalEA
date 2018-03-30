@@ -29,6 +29,11 @@ NEO: ANQxQxFd4z5c7P3W1azK7zxvzRNY4dwbJg
 
 # Version history:
 
+1.23
+- fixed re-entry code
+- added SignalInvalidAfterHours setting, which will prevent the EA from opening trades when the signal is  too old
+- added SignalInvalidAfterPips setting, which will prevent the EA from opening trades when price moved to far from the original signal
+
 1.21
 - small bugfix
 

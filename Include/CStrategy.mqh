@@ -30,13 +30,17 @@ public:
    bool   IsBuy;
    bool   IsSell;
    double StopLoss;
-   
+   int    Age;      // # of hours passed since start of signal
+   double PipsAway; // # of pips price is away since start of 1st signal
+
    //--------------------------------------------------------------------
    void Reset()
    {
       IsBuy    = false;
       IsSell   = false;
       StopLoss = 0;
+      Age      = 1000;
+      PipsAway = 1000;
    }
 };
 

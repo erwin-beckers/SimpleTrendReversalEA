@@ -7,6 +7,8 @@ extern bool        emailAlerts                  = false;
 extern bool        stopLossAtZigZagArrow        = true;
 extern int         minsBetween2TradesOnSamePair = 720;
 extern bool        AllowReEntriesOnSamePair     = false;
+extern int         SignalInvalidAfterHours      = 12;
+extern int         SignalInvalidAfterPips       = 30;
 extern string      TradePairs                   = "EURUSD USDJPY GBPUSD USDCHF USDCAD AUDUSD NZDUSD EURCHF EURGBP EURCAD EURAUD EURNZD EURJPY GBPJPY CHFJPY CADJPY AUDJPY NZDJPY GBPCHF GBPAUD GBPCAD GBPNZD AUDCHF AUDCAD AUDNZD CADCHF NZDCHF NZDCAD";
 
 
@@ -129,6 +131,8 @@ public:
       }
       if ( _allowedToTradeNews && UseNewsFilter )  cnt = cnt + 1;
       if ( _allowedToTradeTimeFilter ) cnt = cnt + 1;
+      if (_signal.Age <= SignalInvalidAfterHours) cnt=cnt + 1;
+      if (_signal.PipsAway <= SignalInvalidAfterPips) cnt=cnt+1;
       return cnt;
    }
    
@@ -138,6 +142,8 @@ public:
       int cnt= _strategy.GetIndicatorCount();
       if (UseNewsFilter) cnt = cnt + 1;
       cnt = cnt + 1; // time filter
+      cnt = cnt + 1; // signal age
+      cnt = cnt + 1; // signal pips from price
       return cnt;
    }
    
@@ -164,6 +170,12 @@ public:
          x += 60;
       }
       DrawText(1, x, "Time",White);
+      x += 60;
+      
+      DrawText(1, x, "Age",White);
+      x += 60;
+
+      DrawText(1, x, "Pips",White);
       x += 60;
       
       DrawText(1, x, "Valid",White);
@@ -198,9 +210,16 @@ public:
       
       color timeColor = _allowedToTradeTimeFilter ? zigClr : clrGray;
       DrawRect(line, xpos, zigClr,60 ); xpos+=60;
-         
+
+      color ageColor = (_signal.Age <= SignalInvalidAfterHours )? zigClr : clrGray;
+      DrawRect(line, xpos, ageColor,60 ); xpos+=60;
+      
+      color pipsColor = (_signal.PipsAway <= SignalInvalidAfterPips )? zigClr : clrGray;
+      DrawRect(line, xpos, pipsColor,60 ); xpos+=60;
+
       color validColor = ( SignalCount() == GetMaxSignalCount() ) ? zigClr : clrGray;
       DrawRect(line, xpos, validColor, 60  );xpos+=60;
+
 
       if (validColor != clrGray)
       {
@@ -332,40 +351,27 @@ public:
       COrder* order = _orders.GetLastClosedOrder();
       if (order != NULL)
       {
-         // check number of minutes elapsed since this last trade has closed
-         double timeElapsed =(double)(TimeCurrent() - order.CloseTime);
-         timeElapsed /= 60.0;
-         bool lastTradeWasBuyOrder  = order.IsBuy;
-         bool lastTradeWasSellOrder = order.IsSell;
-         delete order;
-         
-         int minsSinceLastTrade = (int)timeElapsed;
-		 
-		 // did enough time pass since last trade ?
-		 if (minsSinceLastTrade < minsBetween2TradesOnSamePair)
-         {
-			// no, then return
-            return;
-         }
+        bool lastTradeWasBuyOrder  = order.IsBuy;
+        bool lastTradeWasSellOrder = order.IsSell;
+        
+        // is this a re-entry
+        if ( (lastTradeWasBuyOrder  && _signal.IsBuy) ||
+             (lastTradeWasSellOrder && _signal.IsSell) )
+             {
+                // yes, then check number of minutes elapsed since this last trade has closed
+                double timeElapsed =(double)(TimeCurrent() - order.CloseTime);
+                timeElapsed /= 60.0;
+                delete order;
 
-		 // enough time passed.
-		 // are we allowed to take re-entries ?
-         if (!AllowReEntriesOnSamePair)
-         {
-		    // no we are not. 
-			// Is this a re-entry ?
-            if (lastTradeWasBuyOrder && _signal.IsBuy)
-            {
-				// yes, then return
-                return;
-            }
+                int minsSinceLastTrade = (int)timeElapsed;
 
-            if (lastTradeWasSellOrder && _signal.IsSell)
-            {
-				// yes, then return
-                return;
+                // did enough time pass since last trade ?
+                if (minsSinceLastTrade < minsBetween2TradesOnSamePair)
+                {
+                    // no, then return
+                    return;
+                }
             }
-         }
       }
       
       // did we reach the max nr of open orders ?
