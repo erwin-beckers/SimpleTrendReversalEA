@@ -96,20 +96,14 @@ class CUtils
 {
 private:
    datetime         _prevTime;
-   double           _pipValue;
    CNotifyManager*  _notifyMgr;
    
 public:
-   double PointValue;
    bool   IsNewBar;
    
    CUtils(void)
    {
       _notifyMgr = new CNotifyManager();
-      _pipValue  = 1;
-      if (Digits ==3 || Digits==5) _pipValue = 10;
-      
-      PointValue = Point() * _pipValue;
    }
    
    ~CUtils()
@@ -146,29 +140,48 @@ public:
    }
    
    
+   double PointValue(string symbol)
+   {
+      double pts    = MarketInfo(symbol, MODE_POINT);
+      double digits = MarketInfo(symbol, MODE_DIGITS);
+      double pipValue  = 1;
+      if (digits ==3 || digits==5) pipValue = 10;
+      return pts * pipValue;
+   }
+   
+   
    //------------------------------------------------------------------------------------
    // Convert pips to price
    //------------------------------------------------------------------------------------
-   double PipsToPrice(double pips)
+   double PipsToPrice(string symbol, double pips)
    {
-      return pips * PointValue;
+      return pips * PointValue(symbol);
    }
    
    //------------------------------------------------------------------------------------
    // Convert price to pips
    //------------------------------------------------------------------------------------
-   double PriceToPips(double points)
+   double PriceToPips(string symbol, double points)
    {
-      return points / PointValue;
+      return points / PointValue(symbol);
    }
    
+   double AskPrice(string symbol)
+   {
+     return MarketInfo(symbol, MODE_ASK);
+   }
+   
+   double BidPrice(string symbol)
+   {
+     return MarketInfo(symbol, MODE_BID);
+   }
 
    //------------------------------------------------------------------------------------
    // return current spread
    //------------------------------------------------------------------------------------
-   double Spread()
+   double Spread(string symbol)
    {
-   	return PriceToPips(Ask - Bid);
+   	 return PriceToPips(symbol, AskPrice(symbol) - BidPrice(symbol) );
    }  
    
    //------------------------------------------------------------------------------------
@@ -187,6 +200,40 @@ public:
    		IsNewBar = false;
    	}
    }
+   
+   //------------------------------------------------------------------------------------
+   double GetLotSize(string symbol)
+   {
+      return  MarketInfo(symbol, MODE_LOTSIZE);
+   }
+   
+   //------------------------------------------------------------------------------------
+   double GetLotStep(string symbol)
+   {
+      return  MarketInfo(symbol, MODE_LOTSTEP);
+   }
+   
+   //------------------------------------------------------------------------------------
+   double RequiredMargin(string symbol)
+   {
+      return MarketInfo(symbol,MODE_MARGINREQUIRED);
+   }
+   
+   //------------------------------------------------------------------------------------
+   double NormalizeLotSize(string symbol, double lotSize)
+   {
+      double   normalizedLotSize = 0.;
+      int      lotSizeDigits = 0; 
+      double   lotSizeStep = GetLotStep(symbol);
+      double   minLots     = MarketInfo(symbol, MODE_MINLOT);
+      
+      lotSizeDigits        = (int)-MathRound( MathLog( lotSizeStep) / MathLog(10.) ); // Number of digits after decimal point for the Lot for the current broker, like Digits for symbol prices
+    
+      double cnt=(lotSize - minLots) / lotSizeStep;
+      cnt=MathRound(cnt);
+      normalizedLotSize    = NormalizeDouble( (cnt * lotSizeStep) + minLots, lotSizeDigits);
+      return normalizedLotSize ;
+   } 
 };
 
 CUtils* _utils = new CUtils();

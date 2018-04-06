@@ -21,9 +21,11 @@ public:
    double        Profit;
    datetime      OpenTime;
    datetime      CloseTime;
+   string        Currency;
    
-   COrder(int ticket, double openPrice, double closePrice, double profit, datetime openTime, datetime closeTime, bool isBuyOrder)
+   COrder(int ticket, string symbol, double openPrice, double closePrice, double profit, datetime openTime, datetime closeTime, bool isBuyOrder)
    {
+      Currency   = symbol;
       Ticket     = ticket; 
       OpenPrice  = openPrice;
       ClosePrice = closePrice;
@@ -43,10 +45,9 @@ public:
    //------------------------------------------------------------------------------------
    bool IsPricePipsAboveOpen(double pips)
    {
-      double distanceInPrice = Ask - OpenPrice;
-      double distanceInPips = _utils.PriceToPips(distanceInPrice);
-      return distanceInPips >= pips ;
-      
+      double distanceInPrice = _utils.AskPrice(Currency) - OpenPrice;
+      double distanceInPips = _utils.PriceToPips(Currency, distanceInPrice);
+      return distanceInPips >= pips;
    }
    
    //------------------------------------------------------------------------------------
@@ -54,8 +55,8 @@ public:
    //------------------------------------------------------------------------------------
    bool IsPricePipsBelowOpen(double pips)
    {
-      double distanceInPrice = OpenPrice - Ask ;
-      double distanceInPips = _utils.PriceToPips(distanceInPrice);
+      double distanceInPrice = OpenPrice - _utils.AskPrice(Currency)  ;
+      double distanceInPips = _utils.PriceToPips(Currency, distanceInPrice);
       return distanceInPips >= pips ;
    }
 };

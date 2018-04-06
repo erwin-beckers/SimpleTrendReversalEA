@@ -9,6 +9,7 @@
 
 #include <COrder.mqh>
 #include <AnalyseSymbol.mqh>
+#include <CUtils.mqh>
 
 enum MoneyManagementType 
 {
@@ -42,6 +43,7 @@ public:
       _symbol=symbol;
    }
    
+   
    //------------------------------------------------------------------------------------
    bool CanOpenNewOrder()
    {
@@ -52,16 +54,7 @@ public:
    double IsSpreadOk()
    {
       RefreshRates();
-      double askPrice = MarketInfo(_symbol, MODE_ASK);
-      double bidPrice = MarketInfo(_symbol, MODE_BID);
-      double points   = MarketInfo(_symbol, MODE_POINT);
-      double digits   = MarketInfo(_symbol, MODE_DIGITS);
-      double mult = 1;
-      if (digits ==3 || digits==5) mult = 10;
-      
-      // return when spread too high
-      double spreadNowPips = MathAbs(askPrice - bidPrice) / ( mult * points);
-      if (spreadNowPips > MaxSpreadInPips) return false;
+      if (_utils.Spread(_symbol) > MaxSpreadInPips) return false;
       return true;
    }
    
@@ -119,9 +112,9 @@ public:
       {
          Print("  order selected : closetime:", OrderCloseTime() );
          RefreshRates();
-         double price   = MarketInfo(OrderSymbol(), MODE_ASK);
+         double price   = _utils.AskPrice(OrderSymbol());
          int orderType  = OrderType();
-         if (IsBuy(orderType)) price = MarketInfo(OrderSymbol(), MODE_BID);
+         if (IsBuy(orderType)) price = _utils.BidPrice(OrderSymbol());
          
          Print("  market price:",price, " OpenPrice:", OrderOpenPrice());
          Print("Closing order ", OrderSymbol(),"  #",OrderTicket(), " lots:", OrderLots(), " price:", price);
@@ -164,8 +157,8 @@ public:
                {
                   if (OrderMagicNumber() == MagicNumberBuy || OrderMagicNumber() == MagicNumberSell)
                   {
-                     double price = MarketInfo(OrderSymbol(), MODE_ASK);
-                     if (IsBuy(orderType))  price = MarketInfo(OrderSymbol(), MODE_BID);
+                     double price = _utils.AskPrice(OrderSymbol());
+                     if (IsBuy(orderType))  price = _utils.BidPrice(OrderSymbol());
                      
                      Print("Closing order ", OrderSymbol(),"  #",OrderTicket(), " lots:", OrderLots(), " price", price);
                      bool success = OrderClose(OrderTicket(), OrderLots(), price, 3, Red);
@@ -186,7 +179,7 @@ public:
     int OpenBuyOrder(double lotSize, double sl=0, double tp=0)
     {
       RefreshRates();
-      double price  = MarketInfo(_symbol, MODE_ASK);
+      double price  = _utils.AskPrice(_symbol);
       Print(_symbol, " Open buy order lots:", lotSize, " price:", price,"  sl:",sl, " tp:",tp);
       int ticket    = OrderSend(_symbol, OP_BUY, lotSize, price, 3, sl, tp, BuyComment, MagicNumberBuy);
       if (ticket < 0)
@@ -203,7 +196,7 @@ public:
     int OpenSellOrder(double lotSize, double sl=0, double tp=0)
     {
       RefreshRates();
-      double price  = MarketInfo(_symbol, MODE_BID);
+      double price  = _utils.BidPrice(_symbol);
       Print(_symbol, " Open sell order for lots:", lotSize, " price:", price,"  sl:",sl, " tp:",tp);
       int ticket    = OrderSend(_symbol, OP_SELL, lotSize, price, 3, sl,tp, SellComment, MagicNumberSell);
       if (ticket < 0)
@@ -224,35 +217,35 @@ public:
       switch (MoneyManagement)
       {
          case UseFixedLotSize:
-            Print("Use fixed lot size:",  FixedLotSize);
-            return NormalizeLotSize(FixedLotSize);
+            Print("COrders:GetLotSize() Use fixed lot size:",  FixedLotSize);
+            return _utils.NormalizeLotSize(_symbol, FixedLotSize);
          break;
          
          case UseFixedAmount:
             if (FixedAmount <=0)
             {
-               Print("Use FixedAmount, but fixed amount <=0-> return fixed lotsize: ",  FixedLotSize);
-               return NormalizeLotSize(FixedLotSize);
+               Print("COrders:GetLotSize() Use FixedAmount, but fixed amount <=0-> return fixed lotsize: ",  FixedLotSize);
+               return _utils.NormalizeLotSize(_symbol, FixedLotSize);
             }
-            Print("Use FixedAmount ",  FixedAmount, "  lots:", lotSize);
-            lotSize= CalcLotSize(FixedAmount, stopLossPrice, orderType);
+            Print("COrders:GetLotSize() Use FixedAmount ",  FixedAmount, "  lots:", lotSize);
+            lotSize = CalcLotSize(FixedAmount, stopLossPrice, orderType);
             return lotSize;
          break;
          
          case UsePercentageOfAccountBalance:
             if (RiskPercentage <=0)
             {
-               Print("Use RiskPercentage, but percentage <=0-> return fixed lotsize: ",  FixedLotSize);
-               return NormalizeLotSize(FixedLotSize);
+               Print("COrders:GetLotSize() Use RiskPercentage, but percentage <=0-> return fixed lotsize: ",  FixedLotSize);
+               return _utils.NormalizeLotSize(_symbol, FixedLotSize);
             }
             amount  = AccountBalance() * (RiskPercentage / 100.0);
             lotSize = CalcLotSize(amount, stopLossPrice, orderType);
-            Print("Use Risk percentage ",RiskPercentage,"%  amount:", amount, " lots:", lotSize);
+            Print("COrders:GetLotSize() Use Risk percentage ",RiskPercentage,"%  amount:", amount, " lots:", lotSize);
             return lotSize;
          break;
       }
-      Print("unknown mode-> return fixed lot size:",  FixedLotSize);
-      return NormalizeLotSize(FixedLotSize);
+      Print("COrders:GetLotSize() unknown mode-> return fixed lot size:",  FixedLotSize);
+      return _utils.NormalizeLotSize(_symbol, FixedLotSize);
    }
    
     //------------------------------------------------------------------------------------
@@ -261,22 +254,19 @@ public:
       RefreshRates();
       int    symbolType                 = GetSymbolType(_symbol);
       string currentCounterPairForCross = GetCounterPairForCross(_symbol);
-      double ask           = MarketInfo(_symbol, MODE_ASK);
-      double bid           = MarketInfo(_symbol, MODE_BID);
-      double symbolLotSize = MarketInfo(_symbol, MODE_LOTSIZE) ;
-      double points        = MarketInfo(_symbol, MODE_POINT) ;
-      double digits        = MarketInfo(_symbol, MODE_DIGITS) ;
-      double mult = (digits==3 || digits==5) ? 10.0 : 1.0;
-      double lotSize=0.0;
+      double lotSize = 0.0;
+      double bid           = _utils.BidPrice(_symbol);
+      double ask           = _utils.AskPrice(_symbol);
+      double symbolLotSize = _utils.GetLotSize(_symbol);
       
       if (orderType == OP_BUY)
       {
-          double slPips = MathAbs(stopLossPrice - bid) / (mult * points);
+          double slPips = _utils.PriceToPips(_symbol, MathAbs(stopLossPrice - bid));
           Print(_symbol," CalcLotSize buy: type:", symbolType, "  amount:", DoubleToStr(amountToRisk,2), " sl price:", DoubleToStr(stopLossPrice,5), " ask:", DoubleToStr(ask,5), "sl pips", DoubleToStr(slPips,2));
       }
       else
       {
-         double slPips = MathAbs(stopLossPrice - ask) / (mult * points);
+         double slPips =_utils.PriceToPips(_symbol, MathAbs(stopLossPrice - ask));
          Print(_symbol," CalcLotSize sell: type:", symbolType, "  amount:", DoubleToStr(amountToRisk,2), " sl price:", DoubleToStr(stopLossPrice,5), " bid:", DoubleToStr(bid,5), "sl pips",  DoubleToStr(slPips,2));
      }
      
@@ -323,11 +313,11 @@ public:
             switch(orderType)  // e.g. Symbol() = AUDCAD, the counter currency is CAD and the USD is the base to the CAD in the pair USDCAD
             {
                case OP_BUY:  
-                  lotSize = (-amountToRisk * MarketInfo(currentCounterPairForCross, MODE_BID)) / (symbolLotSize * (stopLossPrice - ask)); 
+                  lotSize = (-amountToRisk * _utils.BidPrice(currentCounterPairForCross)) / (symbolLotSize * (stopLossPrice - ask)); 
                break;
                
                case OP_SELL:  
-                  lotSize = (-amountToRisk * MarketInfo(currentCounterPairForCross, MODE_ASK)) / (symbolLotSize * (bid - stopLossPrice)); 
+                  lotSize = (-amountToRisk * _utils.AskPrice(currentCounterPairForCross)) / (symbolLotSize * (bid - stopLossPrice)); 
                break;
                
                default:  
@@ -340,11 +330,11 @@ public:
             switch(orderType)  // e.g. Symbol() = EURGBP, the counter currency is GBP and the USD is the counter to the GBP in the pair GBPUSD
             {
                case OP_BUY:  
-                  lotSize = -amountToRisk / (symbolLotSize * MarketInfo(currentCounterPairForCross, MODE_BID) * (stopLossPrice - ask)); 
+                  lotSize = -amountToRisk / (symbolLotSize * _utils.BidPrice(currentCounterPairForCross) * (stopLossPrice - ask)); 
                break;
                
                case OP_SELL:  
-                  lotSize = -amountToRisk / (symbolLotSize * MarketInfo(currentCounterPairForCross, MODE_ASK) * (bid - stopLossPrice)); 
+                  lotSize = -amountToRisk / (symbolLotSize * _utils.AskPrice(currentCounterPairForCross) * (bid - stopLossPrice)); 
                break;
                
                default:  
@@ -357,23 +347,11 @@ public:
             Print("Error encountered in the SWITCH routine for calculating the EquityAtRisk"); // The expression did not generate a case value
          break;
       }
-      if (lotSize < 0) lotSize=0;
-      if (returnNormalizedLots) lotSize = NormalizeLotSize(lotSize);
+      if (lotSize < 0) lotSize = 0;
+      if (returnNormalizedLots) lotSize = _utils.NormalizeLotSize(_symbol, lotSize);
       Print(" lotSize:", lotSize);
       return lotSize;
    }  // LotSize body end
-
-   //------------------------------------------------------------------------------------
-   double NormalizeLotSize(double lotSize)
-   {
-      double   normalizedLotSize = 0.;
-      int      lotSizeDigits = 0; 
-      double   lotSizeStep = MarketInfo(_symbol, MODE_LOTSTEP);
-      double   minLots     = MarketInfo(_symbol, MODE_MINLOT);
-      lotSizeDigits        = (int)-MathRound( MathLog( lotSizeStep) / MathLog(10.) ); // Number of digits after decimal point for the Lot for the current broker, like Digits for symbol prices
-      normalizedLotSize    = NormalizeDouble(MathFloor((lotSize - minLots) / lotSizeStep) * lotSizeStep + minLots, lotSizeDigits);
-      return normalizedLotSize ;
-   } 
 
 
    //------------------------------------------------------------------------------------
@@ -413,6 +391,6 @@ public:
          }
       }
        if ( ticket < 0) return NULL;
-       return new COrder(ticket, openPrice, closePrice, profit, openTime, closeTime, isBuy);
+       return new COrder(ticket, _symbol, openPrice, closePrice, profit, openTime, closeTime, isBuy);
    }
 };
