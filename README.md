@@ -1,3 +1,15 @@
+# Donations are welcome !!
+
+Like what you see ? Feel free to donate to support further developments..
+
+
+[![Donate with Bitcoin](https://en.cryptobadges.io/badge/small/3QcDYZEVwNZ9V7T9rrVz82JgPZf2e6prTH)](https://en.cryptobadges.io/donate/3QcDYZEVwNZ9V7T9rrVz82JgPZf2e6prTH)
+
+[![Donate with Litecoin](https://en.cryptobadges.io/badge/small/LawBvKHL77gaVMQ3DM7Bk8KJdZDq43r6PL)](https://en.cryptobadges.io/donate/LawBvKHL77gaVMQ3DM7Bk8KJdZDq43r6PL)
+
+[![Donate with Ethereum](https://en.cryptobadges.io/badge/small/0xe7350b2a0fe5bfa6c491e15d1b00b8a111350af9)](https://en.cryptobadges.io/donate/0xe7350b2a0fe5bfa6c491e15d1b00b8a111350af9)
+
+
 # SimpleTrendReversalEA
 MT4 EA for the simple trend reversal strategy invented by mrdfx
 
@@ -11,20 +23,6 @@ Ideas:
 - calculate RR based on SL and next S&R line
 
 
-
-# Donations are welcome !!
-
-Like what you see ? Feel free to donate to support further developments..
-
-BTC: 1J4npABsiQa2GkJu5q6RsjtCR1jxNvZdtu
-
-BCC: 1J4npABsiQa2GkJu5q6RsjtCR1jxNvZdtu
-
-LTC: LN4BCwQEUzULg3z6NpA5KQSvUftv3xG9xA
-
-ETH: 0xfa77e81d94b39b49f4b3dc7880c68ad57e6e7163
-
-NEO: ANQxQxFd4z5c7P3W1azK7zxvzRNY4dwbJg
 
 
 # Version history:
